@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Firebase service account keys
+nyaymitra-auth-firebase-adminsdk-fbsvc-6c53bc7732.json
+
 # vercel
 .vercel
 
