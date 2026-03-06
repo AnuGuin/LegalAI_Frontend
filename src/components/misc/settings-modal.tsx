@@ -227,51 +227,6 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-medium text-slate-500 dark:text-zinc-500 uppercase tracking-wider">Theme</label>
-                                    <div className="flex gap-2">
-                                        {mounted && (
-                                            <>
-                                                <button
-                                                    onClick={() => setTheme("light")}
-                                                    className={cn(
-                                                        "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-all",
-                                                        theme === "light"
-                                                            ? "bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-600 dark:text-blue-400"
-                                                            : "bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
-                                                    )}
-                                                >
-                                                    <Sun className="w-4 h-4" />
-                                                    <span className="text-sm font-medium">Light</span>
-                                                </button>
-                                                <button
-                                                    onClick={() => setTheme("dark")}
-                                                    className={cn(
-                                                        "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-all",
-                                                        theme === "dark"
-                                                            ? "bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-600 dark:text-blue-400"
-                                                            : "bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
-                                                    )}
-                                                >
-                                                    <Moon className="w-4 h-4" />
-                                                    <span className="text-sm font-medium">Dark</span>
-                                                </button>
-                                                <button
-                                                    onClick={() => setTheme("system")}
-                                                    className={cn(
-                                                        "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-all",
-                                                        theme === "system"
-                                                            ? "bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-600 dark:text-blue-400"
-                                                            : "bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
-                                                    )}
-                                                >
-                                                    <Monitor className="w-4 h-4" />
-                                                    <span className="text-sm font-medium">System</span>
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
 
                                 <div className="pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-3">
                                     <button 

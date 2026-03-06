@@ -2,6 +2,7 @@
 
 import CardFlip from "@/components/ui/card-flip";
 
+import Link from "next/link";
 import { Brain, FileText, Shield } from "lucide-react";
 import { useGSAP } from "@/hooks/use-gsap";
 import { useRef } from "react";
@@ -670,9 +671,9 @@ export function CallToAction() {
           </p>
 
           <div className="flex justify-center items-center mt-12">
-            <button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-blue-500/25 min-w-[200px]">
+            <Link href="/auth" className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-blue-500/25 min-w-[200px]">
               Start Free Trial
-            </button>
+            </Link>
           </div>
 
           <div className="mt-12 flex flex-wrap justify-center gap-8 text-muted-foreground">
