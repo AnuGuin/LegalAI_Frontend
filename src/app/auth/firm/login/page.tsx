@@ -1,3 +1,4 @@
+import FirmAuthForm from '@/components/auth/firm-auth-form';
 export default function FirmLoginPage() {
-  return <div>Firm Login</div>;
+  return <FirmAuthForm mode="login" />;
 }
