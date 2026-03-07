@@ -201,7 +201,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
             >
               <Button
                 variant="default"
-                onClick={() => router.push('/auth/lawyer')}
+                onClick={() => router.push('/auth/lawyer/login')}
                 className="w-full bg-accent-foreground backdrop-blur-sm text-blue-700 hover:bg-emerald-50 hover:border-blue-400/50 transition-all duration-300 h-11 gap-2"
               >
                 <Scale className="h-4 w-4" />
@@ -209,7 +209,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
               </Button>
               <Button
                 variant="default"
-                onClick={() => router.push('/auth/firm')}
+                onClick={() => router.push('/auth/firm/login')}
                 className="w-full bg-accent-foreground backdrop-blur-sm text-blue-700 hover:bg-emerald-50 hover:border-blue-400/50 transition-all duration-300 h-11 gap-2"
               >
                 <Building2 className="h-4 w-4" />
@@ -414,7 +414,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
             </div>
             <Button
               variant="ghost"
-              onClick={() => router.push('/auth/lawyer')}
+              onClick={() => router.push('/auth/lawyer/login')}
               className="w-full text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800/50 gap-2 h-10 text-sm"
             >
               <Scale className="h-4 w-4" />
@@ -422,7 +422,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
             </Button>
             <Button
               variant="ghost"
-              onClick={() => router.push('/auth/firm')}
+              onClick={() => router.push('/auth/firm/login')}
               className="w-full text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800/50 gap-2 h-10 text-sm"
             >
               <Building2 className="h-4 w-4" />
