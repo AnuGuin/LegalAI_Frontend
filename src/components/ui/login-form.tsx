@@ -40,7 +40,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
   }, [mode]);
 
   const toggleAuthMode = () => {
-    const target = isLogin ? '/auth/register' : '/auth/login';
+    const target = isLogin ? '/auth/citizen/register' : '/auth/citizen/login';
     router.push(target);
   };
 
