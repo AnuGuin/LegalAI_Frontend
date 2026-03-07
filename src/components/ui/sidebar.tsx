@@ -3,7 +3,6 @@
 import React, { createContext, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
 
 interface SidebarContextType {
   open: boolean;
@@ -58,30 +57,16 @@ interface SidebarBodyProps {
   className?: string;
 }
 
-export function SidebarBody({ children, className, open }: SidebarBodyProps) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
-  
-  const bgColor = open 
-    ? (isDark ? "rgb(23, 23, 23)" : "rgb(241, 245, 249)") 
-    : (isDark ? "rgb(33, 33, 33)" : "rgb(226, 232, 240)");
-  
+export function SidebarBody({ children, className }: SidebarBodyProps) {
   return (
-    <motion.div
+    <div
       className={cn(
         "flex h-full flex-col overflow-hidden",
         className
       )}
-      animate={{
-        backgroundColor: bgColor
-      }}
-      transition={{
-        duration: 0.4,
-        ease: [0.25, 0.1, 0.25, 1],
-      }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 

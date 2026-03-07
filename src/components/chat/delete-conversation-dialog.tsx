@@ -31,7 +31,7 @@ export function DeleteConversationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="sm:max-w-[425px] p-6 backdrop-blur-sm border border-slate-200/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)]"
+        className="w-[calc(100%-2rem)] sm:max-w-[425px] p-5 sm:p-6 backdrop-blur-sm border border-slate-200/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)]"
       >
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">

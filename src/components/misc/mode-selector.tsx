@@ -1,9 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { MessageCircleDashedIcon} from 'lucide-react';
+import { MessageCircleDashedIcon, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTheme } from 'next-themes';
 import {
   Select,
   SelectContent,
@@ -114,6 +113,7 @@ export interface ChatModeSelectorProps extends React.HTMLAttributes<HTMLElement>
   variant?: 'default' | 'chat-selected';
   onShareClick?: () => void;
   onDeleteClick?: () => void;
+  onMobileMenuClick?: () => void;
 }
 
 const defaultChatModes: ChatMode[] = [
@@ -140,6 +140,7 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
       variant = 'default',
       onShareClick,
       onDeleteClick,
+      onMobileMenuClick,
       ...props
     },
     ref
@@ -167,10 +168,20 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
         className={cn('px-4 md:px-6 [&_*]:no-underline', className)}
         {...props}
       >
-        <div className="flex h-16 items-center justify-between gap-4">
-          {/* Left: Chat Mode Selector (controlled) */}
+        <div className="flex h-16 items-center justify-between gap-2 sm:gap-4">
+          {/* Left: Mobile menu button + Chat Mode Selector */}
+          <div className="flex items-center gap-1 sm:gap-2">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="md:hidden flex-shrink-0 text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 hover:text-slate-700 dark:hover:text-zinc-200 transition-all duration-200 border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50"
+            aria-label="Open sidebar"
+            onClick={(e) => { e.preventDefault(); if (onMobileMenuClick) onMobileMenuClick(); }}
+          >
+            <Menu size={16} aria-hidden="true" />
+          </Button>
           <Select value={selected} onValueChange={handleChange} aria-label="Select chat mode">
-            <SelectTrigger className="px-3 rounded-2xl [&>svg]:text-muted-foreground/80 [&>svg]:shrink-0 border-none shadow-none bg-transparent hover:bg-transparent focus:ring-0 focus:ring-offset-0">
+            <SelectTrigger className="px-3 rounded-2xl [&>svg]:text-muted-foreground/80 [&>svg]:shrink-0 border-none shadow-none bg-slate-100 dark:bg-input/30 hover:bg-zinc-200/80 dark:hover:bg-input/50 focus:ring-0 focus:ring-offset-0">
               <IconComponent size={16} aria-hidden="true" />
               <SelectValue asChild>
                 <span className="ml-2">{selectedLabel}</span>
@@ -188,7 +199,7 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
                     <SelectItem 
                       key={mode.value} 
                       value={mode.value}
-                      className="hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 rounded-xl transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50"
+                      className="focus:bg-zinc-100/80 dark:focus:bg-zinc-800/60 focus:text-slate-800 dark:focus:text-zinc-100 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 rounded-xl transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50"
                     >
                       <div className="flex items-start gap-2">
                         <ItemIcon size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
@@ -205,13 +216,14 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
               </SelectGroup>
             </SelectContent>
           </Select>
+          </div>
 
           {/* Right: Action buttons based on variant */}
           {variant === 'default' ? (
             <Button
               size="icon"
               variant="ghost"
-              className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50 "
+              className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 hover:text-slate-700 dark:hover:text-zinc-200 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50 "
               aria-label="Temporary chat"
               onClick={(e) => {
                 e.preventDefault();
@@ -225,7 +237,7 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50 "
+                className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 hover:text-slate-700 dark:hover:text-zinc-200 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50 "
                 aria-label="Share chat"
                 onClick={(e) => {
                   e.preventDefault();
@@ -237,7 +249,7 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50 hover:text-red-500 dark:hover:text-red-400"
+                className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 hover:text-red-500 dark:hover:text-red-400 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50"
                 aria-label="Delete chat"
                 onClick={(e) => {
                   e.preventDefault();

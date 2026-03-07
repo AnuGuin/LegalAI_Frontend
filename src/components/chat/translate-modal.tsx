@@ -88,7 +88,7 @@ export function TranslateModal({ open, onOpenChange, onLanguageSelect }: Transla
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent 
-        className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-6 backdrop-blur-sm border border-slate-200/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)]"
+        className="w-[calc(100%-2rem)] sm:w-auto sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 backdrop-blur-sm border border-slate-200/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)]"
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-zinc-100">
@@ -99,7 +99,7 @@ export function TranslateModal({ open, onOpenChange, onLanguageSelect }: Transla
 
         <div className="grid gap-6 py-4">
           {/* Language Selection */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-4">
               <Label htmlFor="source-lang" className="text-slate-700 dark:text-zinc-200">Input Language</Label>
               <Select value={sourceLang} onValueChange={setSourceLang}>
@@ -142,11 +142,11 @@ export function TranslateModal({ open, onOpenChange, onLanguageSelect }: Transla
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-between pt-4 border-t border-slate-200 dark:border-zinc-600/20">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 pt-4 border-t border-slate-200 dark:border-zinc-600/20">
           <Button 
             variant="outline" 
             onClick={handleClose}
-            className="rounded-xl border-slate-300 dark:border-zinc-600/40 bg-transparent text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700/50 hover:text-slate-900 dark:hover:text-zinc-100"
+            className="w-full sm:w-auto rounded-xl border-slate-300 dark:border-zinc-600/40 bg-transparent text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700/50 hover:text-slate-900 dark:hover:text-zinc-100"
           >
             Cancel
           </Button>
@@ -154,7 +154,7 @@ export function TranslateModal({ open, onOpenChange, onLanguageSelect }: Transla
           <Button 
             onClick={handleConfirm}
             disabled={!sourceLang || !targetLang}
-            className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full sm:w-auto rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Languages className="w-4 h-4 mr-2" />
             Confirm Selection

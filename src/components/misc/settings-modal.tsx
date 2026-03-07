@@ -83,21 +83,18 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm sm:p-4 animate-in fade-in duration-200">
       <div 
-        className="w-full max-w-4xl h-[600px] bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row"
+        className="w-full sm:max-w-4xl h-[92dvh] sm:h-[620px] sm:max-h-[90vh] bg-white dark:bg-[#1e1e1e] border-0 sm:border border-slate-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col sm:flex-row"
         role="dialog"
         aria-modal="true"
       >
-        <div className="w-full md:w-64 bg-slate-50 dark:bg-[#18181b] border-r border-slate-200 dark:border-zinc-800 flex flex-col p-4">
+        <div className="hidden sm:flex w-64 bg-slate-50 dark:bg-[#18181b] border-r border-slate-200 dark:border-zinc-800 flex-shrink-0 flex-col p-4">
           <div className="flex items-center justify-between mb-6 px-2">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-zinc-100">Settings</h2>
-            <button onClick={() => onOpenChange(false)} className="md:hidden text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white">
-               <X className="w-5 h-5" />
-            </button>
           </div>
 
-          <nav className="space-y-1 flex-1">
+          <nav className="flex flex-col space-y-1 flex-1">
             <SidebarItem 
               active={activeTab === "profile"} 
               onClick={() => setActiveTab("profile")} 
@@ -125,11 +122,18 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
           </nav>
         </div>
 
-        <div className="flex-1 bg-white dark:bg-[#1e1e1e] flex flex-col min-w-0">
-            <div className="h-14 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between px-6 shrink-0">
-                <span className="text-sm font-medium text-slate-500 dark:text-zinc-400">
-                    {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                </span>
+        <div className="flex-1 bg-white dark:bg-[#1e1e1e] flex flex-col min-w-0 min-h-0">
+            {/* Mobile drag handle */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+                <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-zinc-700" />
+            </div>
+            <div className="h-12 sm:h-14 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between px-4 sm:px-6 shrink-0">
+                <div className="flex items-center gap-2">
+                    <span className="sm:hidden text-base font-semibold text-slate-900 dark:text-zinc-100">Settings</span>
+                    <span className="hidden sm:block text-sm font-medium text-slate-500 dark:text-zinc-400">
+                        {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                    </span>
+                </div>
                 <button 
                     onClick={() => onOpenChange(false)} 
                     className="text-slate-400 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 p-2 rounded-full transition-colors"
@@ -138,12 +142,12 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 md:p-8">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
                 {activeTab === "profile" && (
                     <div className="space-y-8 max-w-xl animate-in fade-in slide-in-from-bottom-2 duration-300">
                         {loading ? (
                             <>
-                                <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-4 sm:gap-6">
                                     <Skeleton className="w-20 h-20 rounded-full bg-slate-200 dark:bg-neutral-700" />
                                     <div>
                                         <Skeleton className="h-6 w-32 mb-2 bg-slate-200 dark:bg-neutral-700" />
@@ -189,7 +193,7 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
                             </>
                         ) : (
                             <>
-                                <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-4 sm:gap-6">
                                      <div className="relative group">
                                         <Avatar className="w-20 h-20 border-2 border-slate-200 dark:border-zinc-700">
                                             <AvatarFallback className="bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 text-xl">
@@ -262,15 +266,17 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
                          {(() => {
                            const checked = userProfile?.preferences?.enhanceModel ?? true;
                            return (
-                             <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/30 flex items-center justify-between">
+                             <div className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/30 flex items-start gap-4 justify-between">
                                 <div className="space-y-1">
                                     <h4 className="text-sm font-medium text-slate-800 dark:text-zinc-200">Enhance model for all users</h4>
                                     <p className="text-xs text-slate-500 dark:text-zinc-500 max-w-sm">Allow your content to train our models and improve services. We protect your data privacy.</p>
                                 </div>
-                                <ExSwitch
-                                    checked={checked} 
-                                    onCheckedChange={(c: boolean) => handleUpdatePreference('enhanceModel', c)} 
-                                />
+                                <div className="flex-shrink-0 mt-0.5">
+                                    <ExSwitch
+                                        checked={checked} 
+                                        onCheckedChange={(c: boolean) => handleUpdatePreference('enhanceModel', c)} 
+                                    />
+                                </div>
                              </div>
                            );
                          })()}
@@ -278,7 +284,7 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
                          <div className="space-y-2">
                             <h4 className="text-sm font-medium text-slate-500 dark:text-zinc-400 px-1">Export & Delete</h4>
                             <div className="rounded-xl border border-slate-200 dark:border-zinc-800 divide-y divide-slate-200 dark:divide-zinc-800 overflow-hidden">
-                                <div className="p-4 bg-slate-50 dark:bg-zinc-900/20 flex items-center justify-between hover:bg-slate-100 dark:hover:bg-zinc-900/40 transition-colors">
+                                <div className="p-4 bg-slate-50 dark:bg-zinc-900/20 flex flex-wrap items-center gap-3 justify-between hover:bg-slate-100 dark:hover:bg-zinc-900/40 transition-colors">
                                     <div>
                                         <div className="text-sm font-medium text-slate-800 dark:text-zinc-200">Export data</div>
                                         <div className="text-xs text-slate-500 dark:text-zinc-500">Download all your conversations and settings</div>
@@ -288,7 +294,7 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
                                         Download
                                     </button>
                                 </div>
-                                <div className="p-4 bg-slate-50 dark:bg-zinc-900/20 flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-950/5 transition-colors group">
+                                <div className="p-4 bg-slate-50 dark:bg-zinc-900/20 flex flex-wrap items-center gap-3 justify-between hover:bg-red-50 dark:hover:bg-red-950/5 transition-colors group">
                                     <div>
                                         <div className="text-sm font-medium text-red-500 dark:text-red-400 group-hover:text-red-600 dark:group-hover:text-red-300">Delete all chats</div>
                                         <div className="text-xs text-slate-500 dark:text-zinc-500">Permanently remove all conversation history</div>
@@ -349,6 +355,14 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
                     </div>
                 )}
             </div>
+
+            {/* Mobile bottom tab bar */}
+            <div className="sm:hidden flex items-center border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#1e1e1e] shrink-0">
+                <MobileTabItem active={activeTab === "profile"} onClick={() => setActiveTab("profile")} icon={<User className="w-5 h-5" />} label="Profile" />
+                <MobileTabItem active={activeTab === "data"} onClick={() => setActiveTab("data")} icon={<Database className="w-5 h-5" />} label="Data" />
+                <MobileTabItem active={activeTab === "capabilities"} onClick={() => setActiveTab("capabilities")} icon={<Bot className="w-5 h-5" />} label="AI" />
+                <MobileTabItem active={activeTab === "about"} onClick={() => setActiveTab("about")} icon={<Info className="w-5 h-5" />} label="About" />
+            </div>
         </div>
       </div>
       <TocDialog open={tocOpen} onOpenChange={setTocOpen} />
@@ -369,8 +383,25 @@ function SidebarItem({ active, onClick, icon, label }: { active: boolean, onClic
             )}
         >
             {icon}
-            {label}
+            <span>{label}</span>
             {active && <ChevronRight className="w-4 h-4 ml-auto text-slate-400 dark:text-zinc-500" />}
+        </button>
+    )
+}
+
+function MobileTabItem({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) {
+    return (
+        <button
+            onClick={onClick}
+            className={cn(
+                "flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[11px] font-medium transition-colors",
+                active
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-slate-400 dark:text-zinc-500"
+            )}
+        >
+            <span className={cn("transition-transform duration-200", active && "scale-110")}>{icon}</span>
+            <span>{label}</span>
         </button>
     )
 }
@@ -381,11 +412,11 @@ function CapabilitiesTabContent({ userStats }: { userStats: any }) {
     return (
         <div className="h-full flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex flex-col gap-6">
-                <div className="flex gap-2 p-1 bg-slate-100 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-xl w-fit">
+                <div className="flex gap-2 p-1 bg-slate-100 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-xl w-full sm:w-fit">
                     <button
                         onClick={() => setSelectedCapTab("tools")}
                         className={cn(
-                            "px-4 py-1.5 text-sm font-medium rounded-lg transition-all outline-none",
+                            "flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-lg transition-all outline-none",
                             selectedCapTab === "tools"
                                 ? "text-slate-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 shadow-sm"
                                 : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-400"
@@ -396,7 +427,7 @@ function CapabilitiesTabContent({ userStats }: { userStats: any }) {
                     <button
                         onClick={() => setSelectedCapTab("system")}
                         className={cn(
-                            "px-4 py-1.5 text-sm font-medium rounded-lg transition-all outline-none",
+                            "flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-lg transition-all outline-none",
                             selectedCapTab === "system"
                                 ? "text-slate-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 shadow-sm"
                                 : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-400"
@@ -407,7 +438,7 @@ function CapabilitiesTabContent({ userStats }: { userStats: any }) {
                     <button
                         onClick={() => setSelectedCapTab("stats")}
                         className={cn(
-                            "px-4 py-1.5 text-sm font-medium rounded-lg transition-all outline-none",
+                            "flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-lg transition-all outline-none",
                             selectedCapTab === "stats"
                                 ? "text-slate-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 shadow-sm"
                                 : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-400"
@@ -436,10 +467,11 @@ function CapabilitiesTabContent({ userStats }: { userStats: any }) {
                             <h3 className="text-sm font-medium text-slate-800 dark:text-zinc-200 mb-4">Supported Languages (Beta)</h3>
                             <div className="flex flex-wrap gap-2">
                                 {CAPABILITIES_DATA.supported_languages.map(lang => (
-                                    <div key={lang.name} className="px-2.5 py-1 rounded-md bg-slate-200 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-xs text-slate-700 dark:text-zinc-300 uppercase font-mono">
-                                        {lang.name}
+                                    <div key={lang.name} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-xs">
+                                        <span className="font-mono uppercase font-semibold text-slate-500 dark:text-zinc-400">{lang.name}</span>
+                                        <span className="text-slate-300 dark:text-zinc-600">·</span>
+                                        <span className="text-slate-700 dark:text-zinc-300">{lang.description}</span>
                                     </div>
-                                    
                                 ))}
                             </div>
                         </div>

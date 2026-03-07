@@ -69,6 +69,7 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
   const [messageId, setMessageId] = useState<string | null>(null);
   const { streamingContent, startStreaming } = useStream();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const messagesAreaRef = useRef<{ scrollToBottom: () => void; scrollToTop: () => void } | null>(
     null
   );
@@ -405,7 +406,7 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
   return (
     <div
       className="flex h-screen relative overflow-hidden chat-interface-container"
-      style={{ maxWidth: "100vw" }}
+      style={{ maxWidth: "100vw", height: "100dvh" }}
     >
       <BackgroundLayer />
 
@@ -413,15 +414,16 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
         user={user}
         conversations={sidebarConversations}
         activeConversationId={activeConversationId || undefined}
-        onSelectConversation={handleSelectConversation}
-        onNewConversation={handleNewConversation}
+        onSelectConversation={(id) => { handleSelectConversation(id); setIsMobileSidebarOpen(false); }}
+        onNewConversation={() => { handleNewConversation(); setIsMobileSidebarOpen(false); }}
         onLogout={onLogout}
         isLoadingConversations={isLoadingConversations}
+        mobileOpen={isMobileSidebarOpen}
+        onMobileClose={() => setIsMobileSidebarOpen(false)}
       />
 
       <div
-        className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
-        style={{ maxWidth: "calc(100vw - 65px)" }}
+        className="flex-1 flex flex-col relative z-10 min-w-0 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] w-full md:max-w-[calc(100vw-65px)]"
       >
         <div className="sticky top-0 z-20 bg-[#f8f9fa] dark:bg-[rgb(33,33,33)]">
           <ChatModeSelector
@@ -430,6 +432,7 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
             onTempChatClick={handleTempChatClick}
             onShareClick={handleShareConversation}
             onDeleteClick={handleDeleteConversation}
+            onMobileMenuClick={() => setIsMobileSidebarOpen(true)}
           />
         </div>
 

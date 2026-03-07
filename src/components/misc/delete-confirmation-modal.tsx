@@ -56,7 +56,7 @@ export default function DeleteConfirmationModal({
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] p-6 backdrop-blur-sm border border-zinc-400/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)]">
+      <DialogContent className="w-[calc(100%-2rem)] sm:w-auto sm:max-w-[425px] p-4 sm:p-6 backdrop-blur-sm border border-zinc-400/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)]">
         <div className="flex flex-col items-center gap-2">
           <div
             className="flex size-9 shrink-0 items-center justify-center rounded-full border"
@@ -65,16 +65,16 @@ export default function DeleteConfirmationModal({
             <CircleAlertIcon className="opacity-80" size={16} />
           </div>
           <DialogHeader>
-            <DialogTitle className="sm:text-center text-xl font-semibold text-zinc-800 dark:text-zinc-100">
+            <DialogTitle className="sm:text-center text-lg sm:text-xl font-semibold text-zinc-800 dark:text-zinc-100">
               {title}
             </DialogTitle>
-            <DialogDescription className="sm:text-center text-zinc-600 dark:text-zinc-300 text-left pt-2">
+            <DialogDescription className="sm:text-center text-sm text-zinc-600 dark:text-zinc-300 text-left pt-1 sm:pt-2">
               {description}
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleConfirm(); }}>
+        <form className="space-y-3 sm:space-y-5" onSubmit={(e) => { e.preventDefault(); handleConfirm(); }}>
           <div className="*:not-first:mt-2">
             <Label htmlFor={id} className="text-zinc-700 dark:text-zinc-200">Confirmation</Label>
             <Input
@@ -87,16 +87,16 @@ export default function DeleteConfirmationModal({
               disabled={loading}
             />
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <DialogClose asChild>
-              <Button type="button" variant="outline" className="flex-1 rounded-xl border-zinc-300 dark:border-zinc-600/40 bg-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-zinc-100 px-6" disabled={loading}>
+              <Button type="button" variant="outline" className="w-full sm:flex-1 rounded-xl border-zinc-300 dark:border-zinc-600/40 bg-transparent text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-zinc-100 px-6" disabled={loading}>
                 Cancel
               </Button>
             </DialogClose>
             <Button
               type="submit"
               variant="destructive"
-              className="flex-1 rounded-xl bg-red-600 hover:bg-red-700 text-white border-0 px-6"
+              className="w-full sm:flex-1 rounded-xl bg-red-600 hover:bg-red-700 text-white border-0 px-6"
               disabled={inputValue !== confirmText || loading}
             >
               {loading ? 'Deleting...' : 'Delete'}

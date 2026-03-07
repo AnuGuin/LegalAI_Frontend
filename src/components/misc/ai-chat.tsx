@@ -277,23 +277,24 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
     };
 
     return (
-        <div className="w-full py-4 overflow-visible">
-            <div className="relative max-w-xl w-full mx-auto overflow-visible">
+        <div className="w-full py-2 sm:py-4 overflow-visible">
+            <div className="relative max-w-xl w-full mx-auto overflow-visible px-2 sm:px-0">
                 {/* Main container with extension for doc upload */}
                 <div className={cn(
                     "relative ring-1 ring-black/10 dark:ring-white/10 transition-all duration-300 overflow-visible",
-                    uploadedFiles.length > 0 ? "rounded-2xl" : "rounded-2xl",
+                    uploadedFiles.length > 0 ? "rounded-2xl" : "rounded-full sm:rounded-2xl",
                     isFocused && "ring-black/20 dark:ring-white/20",
                     disabled && "opacity-50 cursor-not-allowed"
                 )}>
                     <div
                         role="textbox"
                         tabIndex={disabled ? -1 : 0}
-                        aria-label="Search input container"
+                        aria-label="Message input"
                         aria-disabled={disabled}
                         className={cn(
-                            "relative flex flex-col transition-all duration-300 ease-in-out w-full text-left overflow-visible",
-                            uploadedFiles.length > 0 ? "rounded-t-2xl" : "rounded-2xl",
+                            "relative flex items-center sm:flex-col sm:items-stretch transition-all duration-300 ease-in-out w-full text-left overflow-visible",
+                            "bg-black/5 dark:bg-input/30 sm:bg-transparent",
+                            uploadedFiles.length > 0 ? "rounded-t-2xl" : "rounded-full sm:rounded-2xl",
                             disabled ? "cursor-not-allowed" : "cursor-text"
                         )}
                         onClick={handleContainerClick}
@@ -303,7 +304,110 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                             }
                         }}
                     >
-                        <div className="overflow-y-auto max-h-[200px]">
+                        {/* MOBILE: left action icons  */}
+                        <div className="sm:hidden flex items-center gap-1 px-2 py-2 shrink-0">
+                            {mode === 'agentic' && (
+                                <button
+                                    type="button"
+                                    onClick={() => !disabled && fileInputRef.current?.click()}
+                                    disabled={disabled}
+                                    className={cn(
+                                        "rounded-full p-2 hover:bg-black/10 dark:hover:bg-white/10 transition-colors relative",
+                                        disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                                    )}
+                                >
+                                    <Paperclip className="w-4 h-4 text-black/40 dark:text-white/40" />
+                                    {uploadedFiles.length > 0 && (
+                                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-sky-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                            {uploadedFiles.length}
+                                        </span>
+                                    )}
+                                </button>
+                            )}
+                            {mode === 'chat' && (
+                                <div className="flex items-center gap-1">
+                                <DropdownMenu onOpenChange={setShowTools}>
+                                    <DropdownMenuTrigger asChild disabled={disabled}>
+                                        <button
+                                            type="button"
+                                            disabled={disabled}
+                                            className={cn(
+                                                "rounded-full p-2 transition-colors",
+                                                selectedTool || showTools
+                                                    ? "bg-sky-500/15 text-sky-500"
+                                                    : "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white",
+                                                disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                                            )}
+                                        >
+                                            <motion.div
+                                                animate={{ rotate: showTools ? 180 : 0, scale: showTools || selectedTool ? 1.1 : 1 }}
+                                                transition={{ type: "spring", stiffness: 260, damping: 25 }}
+                                            >
+                                                {selectedTool ? selectedTool.icon : (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("w-4 h-4", showTools ? "text-sky-500" : "text-inherit")}>
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                        <path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5" />
+                                                    </svg>
+                                                )}
+                                            </motion.div>
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-48 p-2 backdrop-blur-sm border border-slate-200/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)]">
+                                        <div className="space-y-1">
+                                            {tools.map((tool) => (
+                                                <DropdownMenuItem key={tool.id} asChild>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (tool.id === 'translate') {
+                                                                setSelectedTool(tool);
+                                                                setIsTranslateModalOpen(true);
+                                                                setShowTools(false);
+                                                            } else {
+                                                                setSelectedTool(tool);
+                                                                setShowTools(false);
+                                                            }
+                                                        }}
+                                                        className="w-full flex items-center gap-3 p-3 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 rounded-xl transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50"
+                                                    >
+                                                        <div className="flex items-center gap-2 flex-1">
+                                                            {tool.icon}
+                                                            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight whitespace-nowrap group-hover:text-zinc-950 dark:group-hover:text-zinc-50 transition-colors">
+                                                                {tool.label}
+                                                            </span>
+                                                        </div>
+                                                    </button>
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </div>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                {selectedTool && (
+                                    <motion.button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedTool(null);
+                                            if (selectedTool.id === 'translate') {
+                                                setTranslateLanguages(null);
+                                            }
+                                        }}
+                                        disabled={disabled}
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        exit={{ scale: 0, opacity: 0 }}
+                                        transition={{ duration: 0.2, type: "spring", stiffness: 260, damping: 25 }}
+                                        className={cn(
+                                            "w-5 h-5 rounded-full bg-zinc-200/80 dark:bg-zinc-700/80 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors flex items-center justify-center shrink-0",
+                                            disabled && "cursor-not-allowed opacity-50"
+                                        )}
+                                    >
+                                        <X className="w-3 h-3 text-zinc-600 dark:text-zinc-400" />
+                                    </motion.button>
+                                )}
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex-1 min-w-0 overflow-y-auto max-h-[120px] sm:max-h-[200px]">
                             <Textarea
                                 id="ai-input"
                                 value={value}
@@ -312,7 +416,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                         ? "Ask Nyay Mitra Agent" 
                                         : "Ask LegalAI"
                                 }
-                                className="w-full rounded-2xl rounded-b-none px-4 py-3 bg-black/5 dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 leading-[1.2]"
+                                className="w-full min-h-0 rounded-none sm:rounded-2xl sm:rounded-b-none px-4 py-4 bg-transparent dark:bg-transparent sm:bg-black/5 sm:dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 leading-[1.2]"
                                 ref={textareaRef}
                                 disabled={disabled}
                                 onFocus={handleFocus}
@@ -332,8 +436,25 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                             />
                         </div>
 
+                        {/* MOBILE: send button  */}
+                        <div className="sm:hidden flex items-center px-2 py-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={handleSubmit}
+                                disabled={(!value.trim() && uploadedFiles.length === 0) || disabled}
+                                className={cn(
+                                    "rounded-full p-2 transition-colors",
+                                    (value.trim() || uploadedFiles.length > 0) && !disabled
+                                        ? "bg-sky-500/15 text-sky-500 cursor-pointer hover:bg-sky-500/25"
+                                        : "text-black/40 dark:text-white/40 cursor-not-allowed"
+                                )}
+                            >
+                                <Send className="w-4 h-4" />
+                            </button>
+                        </div>
+                        {/* DESKTOP: action bar */}
                         <div className={cn(
-                            "h-12 bg-black/5 dark:bg-white/5 transition-all duration-300",
+                            "hidden sm:block h-12 bg-black/5 dark:bg-white/5 transition-all duration-300",
                             uploadedFiles.length > 0 ? "rounded-b-none" : "rounded-b-2xl"
                         )}>
                             <div className="absolute left-3 bottom-3 flex items-center gap-2">
@@ -639,8 +760,30 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                     </AnimatePresence>
                 </div>
 
+                {/* Mobile: translate language indicator */}
+                {translateLanguages && (
+                    <div className="sm:hidden mt-2 flex items-center justify-center">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full text-xs font-medium border border-blue-500/20">
+                            <Languages className="w-3 h-3" />
+                            <span>{translateLanguages.sourceName} → {translateLanguages.targetName}</span>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setTranslateLanguages(null);
+                                    if (selectedTool?.id === 'translate') {
+                                        setSelectedTool(null);
+                                    }
+                                }}
+                                className="ml-1 hover:bg-blue-500/20 rounded-full p-0.5 transition-colors"
+                            >
+                                <X className="w-2.5 h-2.5" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {showModeIndicator && (
-                    <div className="mt-2 text-center">
+                    <div className="hidden sm:block mt-2 text-center">
                         <p className="text-xs text-black/50 dark:text-white/50">
                             {mode === 'agentic' 
                                 ? "Agentic mode: AI with Document Analysis • Upload documents (PDF, DOC, TXT • Max 10MB)"

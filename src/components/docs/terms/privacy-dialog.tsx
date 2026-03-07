@@ -34,9 +34,9 @@ export default function PrivacyDialog({ open, onOpenChange }: PrivacyDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col gap-0 p-0 sm:max-h-[min(640px,80vh)] sm:max-w-lg [&>button:last-child]:top-3.5 backdrop-blur-sm border border-zinc-400/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)]">
+      <DialogContent className="flex flex-col gap-0 p-0 w-[calc(100%-2rem)] max-h-[90vh] sm:max-h-[min(640px,80vh)] sm:max-w-lg [&>button:last-child]:top-3.5 backdrop-blur-sm border border-zinc-400/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)]">
         <DialogHeader className="contents space-y-0 text-left">
-          <DialogTitle className="border-b border-zinc-200/60 dark:border-zinc-800/60 px-6 py-4 text-base">
+          <DialogTitle className="border-b border-zinc-200/60 dark:border-zinc-800/60 px-4 sm:px-6 py-4 text-base">
             Privacy Policy
           </DialogTitle>
           <div
@@ -45,7 +45,7 @@ export default function PrivacyDialog({ open, onOpenChange }: PrivacyDialogProps
             className="overflow-y-auto"
           >
             <DialogDescription asChild>
-              <div className="px-6 py-4">
+              <div className="px-4 sm:px-6 py-4">
                 <div className="[&_strong]:text-foreground space-y-4 [&_strong]:font-semibold">
                   {/* 1. Introduction */}
                   <div>
@@ -169,7 +169,7 @@ export default function PrivacyDialog({ open, onOpenChange }: PrivacyDialogProps
             </DialogDescription>
           </div>
         </DialogHeader>
-        <DialogFooter className="border-t border-zinc-200/60 dark:border-zinc-800/60 px-6 py-4 sm:items-center">
+        <DialogFooter className="border-t border-zinc-200/60 dark:border-zinc-800/60 px-4 sm:px-6 py-4 sm:items-center gap-2">
           {!hasReadToBottom && (
             <span className="text-muted-foreground grow text-xs max-sm:text-center">
               Please scroll and read the Privacy Policy before accepting.
