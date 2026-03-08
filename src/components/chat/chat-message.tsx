@@ -93,13 +93,13 @@ function ChatMessage({
   if (isUser) {
     return (
       <div className="flex justify-end w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <div className="max-w-[85%] sm:max-w-[75%] md:max-w-[70%] bg-blue-600 text-white rounded-2xl px-4 py-3 shadow-lg">
+        <div className="max-w-[85%] sm:max-w-[75%] md:max-w-[70%] bg-primary text-primary-foreground rounded-2xl px-4 py-3 shadow-lg">
           {Array.isArray(message.attachments) && message.attachments.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-2">
               {message.attachments.map((fileName, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-1 bg-blue-700 px-2 py-1 rounded text-xs"
+                  className="flex items-center gap-1 bg-primary/80 px-2 py-1 rounded text-xs"
                 >
                   <Paperclip className="w-3 h-3" />
                   <span>{fileName}</span>
@@ -117,25 +117,25 @@ function ChatMessage({
 
   return (
     <div className="w-full relative group animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="text-slate-900 dark:text-neutral-100 rounded-2xl p-4 relative">
+      <div className="text-foreground rounded-2xl p-4 relative">
 
         <MarkdownResponse
           className="prose prose-slate dark:prose-invert max-w-none
-          prose-p:text-[15px] prose-p:text-slate-700 dark:prose-p:text-neutral-200 prose-p:leading-[1.8] prose-p:my-3
-          prose-headings:text-slate-900 dark:prose-headings:text-neutral-100 prose-headings:font-semibold prose-headings:tracking-tight
-          prose-h1:text-2xl prose-h1:mt-6 prose-h1:mb-3
-          prose-h2:text-xl prose-h2:mt-5 prose-h2:mb-2.5
-          prose-h3:text-lg prose-h3:mt-4 prose-h3:mb-2
-          prose-strong:text-slate-900 dark:prose-strong:text-neutral-100 prose-strong:font-semibold
-          prose-em:text-slate-600 dark:prose-em:text-neutral-300
-          prose-code:text-[13px] prose-code:text-blue-600 dark:prose-code:text-blue-300 prose-code:bg-slate-100 dark:prose-code:bg-neutral-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
-          prose-pre:text-[13px] prose-pre:bg-slate-100 dark:prose-pre:bg-neutral-900 prose-pre:border prose-pre:border-slate-200 dark:prose-pre:border-neutral-700 prose-pre:rounded-xl prose-pre:my-4
-          prose-blockquote:border-l-2 prose-blockquote:border-blue-400 dark:prose-blockquote:border-blue-500 prose-blockquote:text-slate-600 dark:prose-blockquote:text-neutral-300 prose-blockquote:pl-4 prose-blockquote:bg-slate-50 dark:prose-blockquote:bg-neutral-800/50 prose-blockquote:rounded-r-lg prose-blockquote:py-2
-          prose-ul:text-[15px] prose-ul:text-slate-700 dark:prose-ul:text-neutral-200 prose-ul:my-3 prose-ul:space-y-1
-          prose-ol:text-[15px] prose-ol:text-slate-700 dark:prose-ol:text-neutral-200 prose-ol:my-3 prose-ol:space-y-1
-          prose-li:text-slate-700 dark:prose-li:text-neutral-200 prose-li:leading-[1.75] prose-li:marker:text-blue-400 dark:prose-li:marker:text-blue-500
-          prose-hr:border-slate-200 dark:prose-hr:border-neutral-700 prose-hr:my-6
-          prose-table:text-[14px] prose-th:bg-slate-100 dark:prose-th:bg-neutral-800 prose-th:text-slate-700 dark:prose-th:text-neutral-200 prose-td:text-slate-600 dark:prose-td:text-neutral-300
+          prose-p:text-[16px] prose-p:text-foreground prose-p:leading-[1.65] prose-p:my-2
+          prose-headings:text-foreground prose-headings:font-semibold prose-headings:tracking-tight
+          prose-h1:text-2xl prose-h1:mt-5 prose-h1:mb-2
+          prose-h2:text-xl prose-h2:mt-4 prose-h2:mb-1.5
+          prose-h3:text-lg prose-h3:mt-3 prose-h3:mb-1
+          prose-strong:text-foreground prose-strong:font-semibold
+          prose-em:text-muted-foreground
+          prose-code:text-[14px] prose-code:text-blue-600 dark:prose-code:text-blue-300 prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
+          prose-pre:text-[13px] prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-pre:rounded-xl prose-pre:my-3
+          prose-blockquote:border-l-2 prose-blockquote:border-primary prose-blockquote:text-muted-foreground prose-blockquote:pl-4 prose-blockquote:bg-muted/50 prose-blockquote:rounded-r-lg prose-blockquote:py-1.5
+          prose-ul:text-[16px] prose-ul:text-foreground prose-ul:my-2
+          prose-ol:text-[16px] prose-ol:text-foreground prose-ol:my-2
+          prose-li:text-foreground prose-li:leading-[1.65] prose-li:marker:text-primary
+          prose-hr:border-border prose-hr:my-4
+          prose-table:text-[14px] prose-th:bg-muted prose-th:text-foreground prose-td:text-muted-foreground
           prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:font-medium hover:prose-a:underline prose-a:no-underline"
         >
           {displayContent || ""}
@@ -143,16 +143,16 @@ function ChatMessage({
 
         {/* Mobile inline actions  */}
         <div className="flex items-center gap-0.5 mt-2 md:hidden">
-          <button onClick={handleCopy} aria-label="Copy" className="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors">
+          <button onClick={handleCopy} aria-label="Copy" className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors">
             <Copy className="w-3.5 h-3.5" />
           </button>
-          <button onClick={handleLike} aria-label="Like" className="p-1.5 rounded text-slate-400 hover:text-green-500 dark:text-neutral-500 dark:hover:text-green-400 transition-colors">
+          <button onClick={handleLike} aria-label="Like" className="p-1.5 rounded text-muted-foreground hover:text-green-500 dark:hover:text-green-400 transition-colors">
             <ThumbsUp className="w-3.5 h-3.5" />
           </button>
-          <button onClick={handleDislike} aria-label="Dislike" className="p-1.5 rounded text-slate-400 hover:text-red-500 dark:text-neutral-500 dark:hover:text-red-400 transition-colors">
+          <button onClick={handleDislike} aria-label="Dislike" className="p-1.5 rounded text-muted-foreground hover:text-red-500 dark:hover:text-red-400 transition-colors">
             <ThumbsDown className="w-3.5 h-3.5" />
           </button>
-          <button onClick={handleRegenerate} aria-label="Regenerate" className="p-1.5 rounded text-slate-400 hover:text-blue-500 dark:text-neutral-500 dark:hover:text-blue-400 transition-colors">
+          <button onClick={handleRegenerate} aria-label="Regenerate" className="p-1.5 rounded text-muted-foreground hover:text-primary transition-colors">
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -167,19 +167,19 @@ function ChatMessage({
             transition-all duration-300 pointer-events-auto
           "
         >
-          <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-slate-200/50 dark:border-neutral-700/50 rounded-lg p-1 shadow-lg">
+          <div className="bg-popover/90 backdrop-blur-sm border border-border/50 rounded-lg p-1 shadow-lg">
             <Actions>
               <Action onClick={handleCopy} tooltip="Copy">
-                <Copy className="w-4 h-4 text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-neutral-200" />
+                <Copy className="w-4 h-4 text-muted-foreground hover:text-foreground" />
               </Action>
               <Action onClick={handleLike} tooltip="Like">
-                <ThumbsUp className="w-4 h-4 text-slate-500 dark:text-neutral-400 hover:text-green-500 dark:hover:text-green-400" />
+                <ThumbsUp className="w-4 h-4 text-muted-foreground hover:text-green-500 dark:hover:text-green-400" />
               </Action>
               <Action onClick={handleDislike} tooltip="Dislike">
-                <ThumbsDown className="w-4 h-4 text-slate-500 dark:text-neutral-400 hover:text-red-500 dark:hover:text-red-400" />
+                <ThumbsDown className="w-4 h-4 text-muted-foreground hover:text-red-500 dark:hover:text-red-400" />
               </Action>
               <Action onClick={handleRegenerate} tooltip="Regenerate">
-                <RotateCcw className="w-4 h-4 text-slate-500 dark:text-neutral-400 hover:text-blue-500 dark:hover:text-blue-400" />
+                <RotateCcw className="w-4 h-4 text-muted-foreground hover:text-primary" />
               </Action>
             </Actions>
           </div>
@@ -194,8 +194,8 @@ function ChatMessage({
 function LoadingMessage() {
   return (
     <div className="flex gap-3 p-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="h-8 w-8 rounded-full border border-blue-400/20 dark:border-blue-300/20 flex items-center justify-center">
-        <div className="w-4 h-4 bg-blue-500 dark:bg-blue-400 rounded-full animate-pulse" />
+      <div className="h-8 w-8 rounded-full border border-primary/20 flex items-center justify-center">
+        <div className="w-4 h-4 bg-primary rounded-full animate-pulse" />
       </div>
       <div className="flex-1 flex justify-start items-center">
         <AITextLoading
@@ -205,7 +205,7 @@ function LoadingMessage() {
             "Researching relevant laws...",
             "Formulating response...",
           ]}
-          className="!text-sm !font-mono !font-normal !text-slate-600 dark:!text-neutral-300"
+          className="!text-sm !font-mono !font-normal !text-muted-foreground"
           interval={1000}
         />
       </div>
@@ -221,17 +221,12 @@ function WelcomeScreen({ user, onSendMessage, selectedMode }: {
   selectedMode: "chat" | "agentic";
 }) {
   return (
-   <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex items-center justify-center p-4 sm:p-6" style={{ top: 'calc(50% - 30px)' }}>
+   <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex items-center justify-center p-4 sm:p-6" style={{ top: 'calc(50% - 50px)' }}>
       <div className="text-center max-w-2xl w-full">
-        <div className="mb-2">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-2 sm:mb-4 text-blue-600 dark:text-blue-400">
+        <div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-primary" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
             Hello {user.name.split(' ')[0]}
           </h1>
-          <div>
-            <TextShimmer className='font-medium text-sm' duration={4}>
-              How can I assist you with your legal questions?
-            </TextShimmer>
-          </div>
         </div>
         <div className="w-full hidden sm:block">
           <AI_Input 
@@ -342,11 +337,11 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
     const hasMessages = combinedMessages.length > 0;
 
     return (
-      <>
+      <div className="flex flex-col flex-1 min-h-0 relative">
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className={`flex-1 metallic-scrollbar relative transition-all duration-200 ${
+          className={`flex-1 min-h-0 metallic-scrollbar relative transition-all duration-200 ${
             hasMessages ? "overflow-y-auto" : "overflow-hidden"
           }`}
         >
@@ -385,7 +380,7 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
               />
             </div>
 
-            <div className="flex items-center justify-center font-light text-xs gap-1 mt-2 text-slate-500 dark:text-white/70">
+            <div className="flex items-center justify-center font-light text-xs gap-1 mt-2 text-muted-foreground">
               <p>LegalAI can make mistakes. Refer to</p>
               <a
                 href="#cookies"
@@ -393,7 +388,7 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
                   e.preventDefault();
                   setIsCookieOpen(true);
                 }}
-                className="text-slate-600 dark:text-white/70 hover:text-slate-800 dark:hover:text-white transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 Cookie Policies
               </a>
@@ -408,13 +403,13 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
         {showScrollButton && (
           <button
             onClick={forceScrollToBottom}
-            className="absolute bottom-24 left-1/2 -translate-x-1/2 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:left-auto sm:translate-x-0 sm:right-6 z-20 p-2 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm border border-slate-200 dark:border-neutral-700 rounded-full text-slate-500 dark:text-neutral-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-700 transition-all shadow-lg animate-in fade-in zoom-in duration-200"
+            className="absolute bottom-46  left-1/2 -translate-x-1/2 rounded-full bg-background text-muted-foreground hover:text-foreground transition-colors animate-in fade-in zoom-in duration-200"
             aria-label="Scroll to bottom"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-circle-arrow-down"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M8 12l4 4" /><path d="M12 8v8" /><path d="M16 12l-4 4" /></svg>
           </button>
         )}
-      </>
+      </div>
     );
   }
 );

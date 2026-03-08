@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuroraBackground } from '@/components/ui/aurora-background';
+import Aurora from '@/components/ui/Aurora';
 import { Logo } from '@/components/ui/logo';
 import { Eye, EyeOff, Loader2, Check, ArrowLeft, Home } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -360,11 +360,18 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
 
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row">
+    <div className="h-screen w-full flex flex-col md:flex-row gap-4 p-4 bg-background">
       {/* Left — Aurora branding panel (fixed) */}
-      <div className="hidden md:flex md:w-1/2 relative overflow-hidden">
-        <AuroraBackground className="!h-full !min-h-0 w-full dark:bg-slate-950 bg-slate-950">
-          <div className="relative z-10 flex flex-col items-center justify-center h-full px-12 text-center gap-10">
+      <div className="hidden md:flex md:w-1/2 relative overflow-hidden bg-[#060010] rounded-2xl">
+        <div className="absolute inset-0">
+          <Aurora
+            colorStops={["#060010", "#f0c6a3", "#b36b76"]}
+            blend={0.3}
+            amplitude={0.5}
+            speed={0.4}
+          />
+        </div>
+          <div className="relative z-10 flex flex-col items-center justify-center h-full w-full px-12 text-center gap-10">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -406,18 +413,17 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
               <Button
                 variant="default"
                 onClick={() => router.push('/#home')}
-                className="w-full bg-accent-foreground backdrop-blur-sm text-blue-700 hover:bg-emerald-50 hover:border-blue-400/50 transition-all duration-300 h-11 gap-2"
+                className="w-full bg-gradient-to-b from-[#c9a882] to-[#8a6245] text-white/90 font-medium h-11 gap-2 shadow-inner cursor-pointer hover:text-white"
               >
                 <Home className="h-4 w-4" />
                 Home
               </Button>
             </motion.div>
           </div>
-        </AuroraBackground>
       </div>
 
       {/* Right — Auth content */}
-      <div className={`flex-1 bg-white dark:bg-zinc-900 px-4 py-10 md:px-8 ${step === 'FORM' && !isLogin ? 'overflow-y-auto' : 'flex items-center justify-center'}`}>
+      <div className={`flex-1 px-4 py-10 md:px-8 ${step === 'FORM' && !isLogin ? 'overflow-y-auto' : 'flex items-center justify-center'}`}>
         <AnimatePresence mode="wait">
           {step === 'FORM' && (
             <motion.div
@@ -635,7 +641,7 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
 
                 <Button
                   type="submit"
-                  className="w-full h-11 bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
+                  className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-colors"
                   disabled={isLoading || !email || !password || (!isLogin && (!name || !phoneVerified || !barNumberVerified))}
                 >
                   {isLoading ? (

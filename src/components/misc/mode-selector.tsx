@@ -174,14 +174,14 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
           <Button
             size="icon"
             variant="ghost"
-            className="md:hidden flex-shrink-0 text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 hover:text-slate-700 dark:hover:text-zinc-200 transition-all duration-200 border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50"
+            className="md:hidden flex-shrink-0 text-muted-foreground size-8 rounded-full shadow-none hover:bg-accent hover:text-accent-foreground transition-all duration-200 border border-transparent hover:border-border/50"
             aria-label="Open sidebar"
             onClick={(e) => { e.preventDefault(); if (onMobileMenuClick) onMobileMenuClick(); }}
           >
             <Menu size={16} aria-hidden="true" />
           </Button>
           <Select value={selected} onValueChange={handleChange} aria-label="Select chat mode">
-            <SelectTrigger className="px-3 rounded-2xl [&>svg]:text-muted-foreground/80 [&>svg]:shrink-0 border-none shadow-none bg-slate-100 dark:bg-input/30 hover:bg-zinc-200/80 dark:hover:bg-input/50 focus:ring-0 focus:ring-offset-0">
+            <SelectTrigger className="px-3 rounded-2xl [&>svg]:text-muted-foreground/80 [&>svg]:shrink-0 border-none shadow-none bg-muted dark:bg-input/30 hover:bg-muted/80 dark:hover:bg-input/50 focus:ring-0 focus:ring-offset-0">
               <IconComponent size={16} aria-hidden="true" />
               <SelectValue asChild>
                 <span className="ml-2">{selectedLabel}</span>
@@ -189,7 +189,7 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
             </SelectTrigger>
 
             <SelectContent 
-              className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 backdrop-blur-sm border border-slate-200/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 bg-white dark:bg-[rgb(53,53,53)]"
+              className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2 backdrop-blur-sm border border-border/60 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 bg-popover"
             >
               <SelectGroup>
                 <SelectLabel className="ps-2">Chat Modes</SelectLabel>
@@ -199,7 +199,7 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
                     <SelectItem 
                       key={mode.value} 
                       value={mode.value}
-                      className="focus:bg-zinc-100/80 dark:focus:bg-zinc-800/60 focus:text-slate-800 dark:focus:text-zinc-100 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 rounded-xl transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50"
+                      className="focus:bg-accent focus:text-accent-foreground hover:bg-accent data-[highlighted]:bg-accent rounded-xl transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-border/50"
                     >
                       <div className="flex items-start gap-2">
                         <ItemIcon size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
@@ -223,7 +223,7 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
             <Button
               size="icon"
               variant="ghost"
-              className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 hover:text-slate-700 dark:hover:text-zinc-200 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50 "
+              className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-accent hover:text-accent-foreground data-[highlighted]:bg-accent transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-border/50 "
               aria-label="Temporary chat"
               onClick={(e) => {
                 e.preventDefault();
@@ -237,7 +237,7 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 hover:text-slate-700 dark:hover:text-zinc-200 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50 "
+                className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-accent hover:text-accent-foreground data-[highlighted]:bg-accent transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-border/50 "
                 aria-label="Share chat"
                 onClick={(e) => {
                   e.preventDefault();
@@ -249,7 +249,7 @@ export const ChatModeSelector = React.forwardRef<HTMLElement, ChatModeSelectorPr
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 hover:text-red-500 dark:hover:text-red-400 data-[highlighted]:bg-zinc-100/80 data-[highlighted]:dark:bg-zinc-800/60 transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-700/50"
+                className="text-muted-foreground size-8 rounded-full shadow-none hover:bg-accent hover:text-red-500 dark:hover:text-red-400 data-[highlighted]:bg-accent transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-border/50"
                 aria-label="Delete chat"
                 onClick={(e) => {
                   e.preventDefault();

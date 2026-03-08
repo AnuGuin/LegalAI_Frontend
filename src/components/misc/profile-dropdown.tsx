@@ -78,23 +78,23 @@ export default function ProfileDropdown({
         {
             label: "Settings",
             href: "#",
-            icon: <Settings className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />,
+            icon: <Settings className="w-4 h-4 text-foreground" />,
         },
         {
             label: "Themes",
             href: "#",
-            icon: <Palette className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />,
+            icon: <Palette className="w-4 h-4 text-foreground" />,
         },
         {
             label: "Subscription",
             value: data.subscription,
             href: "#",
-            icon: <CreditCard className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />,
+            icon: <CreditCard className="w-4 h-4 text-foreground" />,
         },
         {
             label: "Terms & Policies",
             href: "#",
-            icon: <FileText className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />,
+            icon: <FileText className="w-4 h-4 text-foreground" />,
         },
     ];
 
@@ -106,7 +106,7 @@ export default function ProfileDropdown({
                         <button
                             type="button"
                             className={cn(
-                                "flex items-center rounded-2xl  transition-all duration-200 focus:outline-none hover:bg-slate-200 dark:hover:bg-neutral-700",
+                                "flex items-center rounded-2xl  transition-all duration-200 focus:outline-none hover:bg-accent",
                                 showUserDetails ? "gap-3 p-3 w-full" : "p-2 w-fit justify-center"
                             )}
                         >
@@ -116,7 +116,7 @@ export default function ProfileDropdown({
                                         {data.avatar ? (
                                             <AvatarImage src={data.avatar} alt={data.name} className="rounded-full" />
                                         ) : (
-                                            <AvatarFallback className="bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 rounded-full">
+                                            <AvatarFallback className="bg-background text-muted-foreground rounded-full">
                                                 <User className="w-5 h-5" />
                                             </AvatarFallback>
                                         )}
@@ -125,7 +125,7 @@ export default function ProfileDropdown({
                             </div>
                             {showUserDetails && (
                                 <div className="text-left flex-1 min-w-0">
-                                    <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight truncate">
+                                    <div className="text-sm font-medium text-foreground tracking-tight leading-tight truncate">
                                         {data.name}
                                     </div>
                                 </div>
@@ -138,7 +138,7 @@ export default function ProfileDropdown({
                         align={align}
                         sideOffset={sideOffset}
                         alignOffset={alignOffset}
-                        className="z-50 w-56 p-2 backdrop-blur-sm border border-slate-200/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)]
+                        className="z-50 w-56 p-2 backdrop-blur-sm border border-border/60 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-popover
                     data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
                     >
 
@@ -148,10 +148,10 @@ export default function ProfileDropdown({
                                 if (item.label === "Settings") {
                                     return (
                                         <DropdownMenuItem key={item.label} className="flex items-center p-2 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent
-                                                hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60
-                                                hover:border-zinc-200/50 dark:hover:border-zinc-700/50 hover:shadow-sm
-                                                focus:bg-zinc-100/80 dark:focus:bg-zinc-800/60
-                                                focus:text-zinc-900 dark:focus:text-zinc-100 w-full">
+                                                hover:bg-accent
+                                                hover:border-border/50 hover:shadow-sm
+                                                focus:bg-accent
+                                                focus:text-accent-foreground w-full">
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -161,7 +161,7 @@ export default function ProfileDropdown({
                                                 className="flex items-center gap-2 flex-1"
                                             >
                                                 {item.icon}
-                                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight whitespace-nowrap group-hover:text-zinc-950 dark:group-hover:text-zinc-50 transition-colors">
+                                                <span className="text-sm font-medium text-foreground tracking-tight leading-tight whitespace-nowrap group-hover:text-foreground transition-colors">
                                                     {item.label}
                                                 </span>
                                             </button>
@@ -173,17 +173,17 @@ export default function ProfileDropdown({
                                             <DropdownMenuSubTrigger
                                                 onMouseEnter={() => setThemesOpen(true)}
                                                 className="flex items-center p-2 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent 
-                                                hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60
-                                                hover:border-zinc-200/50 dark:hover:border-zinc-700/50 hover:shadow-sm
-                                                focus:bg-zinc-100/80 dark:focus:bg-zinc-800/60 
-                                                data-[state=open]:bg-zinc-100/80 dark:data-[state=open]:bg-zinc-800/60
-                                                focus:text-zinc-900 dark:focus:text-zinc-100
-                                                data-[state=open]:text-zinc-900 dark:data-[state=open]:text-zinc-100
+                                                hover:bg-accent
+                                                hover:border-border/50 hover:shadow-sm
+                                                focus:bg-accent 
+                                                data-[state=open]:bg-accent
+                                                focus:text-accent-foreground
+                                                data-[state=open]:text-accent-foreground
                                                 w-full"
                                             >
                                                 <div className="flex items-center gap-2 flex-1">
                                                     {item.icon}
-                                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight whitespace-nowrap group-hover:text-zinc-950 dark:group-hover:text-zinc-50 transition-colors">
+                                                    <span className="text-sm font-medium text-foreground tracking-tight leading-tight whitespace-nowrap group-hover:text-foreground transition-colors">
                                                         {item.label}
                                                     </span>
                                                 </div>
@@ -191,27 +191,27 @@ export default function ProfileDropdown({
                                             <DropdownMenuPortal>
                                                 <DropdownMenuSubContent
                                                     sideOffset={4}
-                                                    className="w-32 p-2 backdrop-blur-sm border border-slate-200/60 dark:border-zinc-600/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-white dark:bg-[rgb(53,53,53)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+                                                    className="w-32 p-2 backdrop-blur-sm border border-border/60 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-popover data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
                                                 >
                                                     <DropdownMenuRadioGroup value={theme}>
                                                         <DropdownMenuRadioItem
                                                             value="light"
                                                             onClick={() => setTheme("light")}
-                                                            className="text-sm font-medium text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight"
+                                                            className="text-sm font-medium text-foreground tracking-tight leading-tight"
                                                         >
                                                             Light
                                                         </DropdownMenuRadioItem>
                                                         <DropdownMenuRadioItem
                                                             value="dark"
                                                             onClick={() => setTheme("dark")}
-                                                            className="text-sm font-medium text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight"
+                                                            className="text-sm font-medium text-foreground tracking-tight leading-tight"
                                                         >
                                                             Dark
                                                         </DropdownMenuRadioItem>
                                                         <DropdownMenuRadioItem
                                                             value="system"
                                                             onClick={() => setTheme("system")}
-                                                            className="text-sm font-medium text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight"
+                                                            className="text-sm font-medium text-foreground tracking-tight leading-tight"
                                                         >
                                                             System
                                                         </DropdownMenuRadioItem>
@@ -223,17 +223,17 @@ export default function ProfileDropdown({
                                 } else if (item.label === "Terms & Policies") {
                                     return (
                                         <DropdownMenuItem key={item.label} className="flex items-center p-2 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent
-                                                hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60
-                                                hover:border-zinc-200/50 dark:hover:border-zinc-700/50 hover:shadow-sm
-                                                focus:bg-zinc-100/80 dark:focus:bg-zinc-800/60
-                                                focus:text-zinc-900 dark:focus:text-zinc-100 w-full">
+                                                hover:bg-accent
+                                                hover:border-border/50 hover:shadow-sm
+                                                focus:bg-accent
+                                                focus:text-accent-foreground w-full">
                                             <button
                                                 type="button"
                                                 onClick={() => setTocOpen(true)}
                                                 className="flex items-center gap-2 flex-1"
                                             >
                                                 {item.icon}
-                                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight whitespace-nowrap group-hover:text-zinc-950 dark:group-hover:text-zinc-50 transition-colors">
+                                                <span className="text-sm font-medium text-foreground tracking-tight leading-tight whitespace-nowrap group-hover:text-foreground transition-colors">
                                                     {item.label}
                                                 </span>
                                             </button>
@@ -242,16 +242,16 @@ export default function ProfileDropdown({
                                 } else {
                                     return (
                                         <DropdownMenuItem key={item.label} asChild className="flex items-center p-2 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent
-                                                hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60
-                                                hover:border-zinc-200/50 dark:hover:border-zinc-700/50 hover:shadow-sm
-                                                focus:bg-zinc-100/80 dark:focus:bg-zinc-800/60
-                                                focus:text-zinc-900 dark:focus:text-zinc-100 w-full">
+                                                hover:bg-accent
+                                                hover:border-border/50 hover:shadow-sm
+                                                focus:bg-accent
+                                                focus:text-accent-foreground w-full">
                                             <Link
                                                 href={item.href}
                                             >
                                                 <div className="flex items-center gap-2 flex-1">
                                                     {item.icon}
-                                                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight whitespace-nowrap group-hover:text-zinc-950 dark:group-hover:text-zinc-50 transition-colors">
+                                                    <span className="text-sm font-medium text-foreground tracking-tight leading-tight whitespace-nowrap group-hover:text-foreground transition-colors">
                                                         {item.label}
                                                     </span>
                                                 </div>
@@ -276,18 +276,18 @@ export default function ProfileDropdown({
                             })}
                         </div>
 
-                        <DropdownMenuSeparator className="mx-2 bg-gradient-to-r from-transparent via-zinc-200 to-transparent dark:via-zinc-800" />
+                        <DropdownMenuSeparator className="mx-2 bg-gradient-to-r from-transparent via-border to-transparent" />
 
                         <DropdownMenuItem asChild className="w-full flex items-center gap-2 p-2 rounded-xl cursor-pointer border border-transparent transition-all group
-                                hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60
-                                focus:bg-zinc-100/80 dark:focus:bg-zinc-800/60
-                                focus:text-zinc-900 dark:focus:text-zinc-100">
+                                hover:bg-accent
+                                focus:bg-accent
+                                focus:text-accent-foreground">
                             <button
                                 type="button"
                                 onClick={onSignOut}
                             >
-                                <LogOut className="w-4 h-4 text-zinc-900 dark:text-zinc-100 group-hover:text-red-600/80" />
-                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 group-hover:text-red-600/80">
+                                <LogOut className="w-4 h-4 text-foreground group-hover:text-red-600/80" />
+                                <span className="text-sm font-medium text-foreground group-hover:text-red-600/80">
                                     Sign Out
                                 </span>
                             </button>

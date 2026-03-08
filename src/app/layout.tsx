@@ -3,6 +3,7 @@ import {
   Montserrat,
   Playfair_Display,
   Source_Code_Pro,
+  Instrument_Serif,
 } from "next/font/google";
 // @ts-ignore
 import "./globals.css";
@@ -31,6 +32,13 @@ const sourceCodePro = Source_Code_Pro({
   fallback: ["Consolas", "monospace"],
 });
 
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  display: "swap",
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: "LegalAI",
   description:
@@ -44,7 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="metallic-scrollbar">
-      <body className={`${montserrat.variable} ${playfairDisplay.variable} ${sourceCodePro.variable} antialiased metallic-scrollbar`} >
+      <body className={`${montserrat.variable} ${playfairDisplay.variable} ${sourceCodePro.variable} ${instrumentSerif.variable} antialiased metallic-scrollbar`} >
         <HeroUIProvider>
           <ThemeProvider
             attribute="class"

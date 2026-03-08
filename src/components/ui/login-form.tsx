@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { motion } from 'framer-motion';
 import TocDialog from '@/components/docs/terms/toc-dialog';
 import PrivacyDialog from '@/components/docs/terms/privacy-dialog';
-import { AuroraBackground } from '@/components/ui/aurora-background';
+import Aurora from '@/components/ui/Aurora';
 import { Logo } from '@/components/ui/logo';
 import { Eye, EyeOff, Loader2, Scale, Building2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -174,21 +174,28 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row">
+    <div className="min-h-screen w-full flex flex-col md:flex-row gap-4 p-4 bg-background">
       {/* Left — Aurora branding panel */}
-      <div className="hidden md:flex md:w-1/2 relative">
-        <AuroraBackground className="!h-full !min-h-0 w-full dark:bg-slate-950 bg-slate-950">
-          <div className="relative z-10 flex flex-col items-center justify-center h-full px-12 text-center gap-10">
+      <div className="hidden md:flex md:w-1/2 relative bg-[#060010] rounded-2xl overflow-hidden">
+        <div className="absolute inset-0">
+          <Aurora 
+            colorStops={["#060010", "#f0c6a3", "#b36b76"]}
+            blend={0.3}
+            amplitude={0.5}
+            speed={0.4} 
+          />
+        </div>
+          <div className="relative z-10 flex flex-col items-center justify-center h-full w-full px-12 text-center gap-10">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2, ease: 'easeOut' }}
               className="flex flex-col items-center gap-4"
             >
-              <h1 className="text-5xl font-bold tracking-tight text-white mt-4">
+              <h1 className="text-5xl font-bold tracking-tight text-primary-foreground mt-4">
                 LegalAI
               </h1>
-              <p className="text-blue-200/70 text-base max-w-xs leading-relaxed">
+              <p className="text-primary-foreground/60 text-base max-w-xs leading-relaxed">
                 AI-powered legal intelligence for professionals
               </p>
             </motion.div>
@@ -202,7 +209,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
               <Button
                 variant="default"
                 onClick={() => router.push('/auth/lawyer/login')}
-                className="w-full bg-accent-foreground backdrop-blur-sm text-blue-700 hover:bg-emerald-50 hover:border-blue-400/50 transition-all duration-300 h-11 gap-2"
+                className="w-full bg-gradient-to-b from-[#c9a882] to-[#8a6245] text-white/90 font-medium h-11 gap-2 shadow-inner cursor-pointer hover:text-white"
               >
                 <Scale className="h-4 w-4" />
                 Lawyer Authentication
@@ -210,18 +217,17 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
               <Button
                 variant="default"
                 onClick={() => router.push('/auth/firm/login')}
-                className="w-full bg-accent-foreground backdrop-blur-sm text-blue-700 hover:bg-emerald-50 hover:border-blue-400/50 transition-all duration-300 h-11 gap-2"
+                className="w-full bg-gradient-to-b from-[#c9a882] to-[#8a6245] text-white/90 font-medium h-11 gap-2 shadow-inner cursor-pointer hover:text-white"
               >
                 <Building2 className="h-4 w-4" />
                 Firm Authentication
               </Button>
             </motion.div>
           </div>
-        </AuroraBackground>
       </div>
 
       {/* Right — Auth form */}
-      <div className="flex-1 flex items-center justify-center bg-white dark:bg-zinc-900 px-4 py-10 md:px-8 min-h-screen">
+      <div className="flex-1 flex items-center justify-center px-4 py-10 md:px-8 min-h-[calc(100vh-2rem)]">
         <motion.div
           className="w-full max-w-sm"
           initial={{ opacity: 0, y: 24 }}
@@ -294,7 +300,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
               <div className="w-full border-t border-gray-200 dark:border-zinc-800" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white dark:bg-zinc-900 px-3 text-gray-400 dark:text-zinc-500">or</span>
+              <span className="bg-background px-3 text-gray-400 dark:text-zinc-500">or</span>
             </div>
           </motion.div>
 
@@ -364,7 +370,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
 
             <Button
               type="submit"
-              className="w-full h-11 bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
+              className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-colors"
               disabled={isLoading || !email || !password || (!isLogin && !name)}
             >
               {isLoading ? (
@@ -409,7 +415,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
                 <div className="w-full border-t border-gray-200 dark:border-zinc-800" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="bg-white dark:bg-zinc-900 px-3 text-gray-400 dark:text-zinc-500">Professional Access</span>
+                <span className="bg-background px-3 text-gray-400 dark:text-zinc-500">Professional Access</span>
               </div>
             </div>
             <Button

@@ -31,8 +31,8 @@ export function Sidebar({ children, open, setOpen, className }: SidebarProps) {
     <SidebarContext.Provider value={{ open, setOpen }}>
       <motion.div
         className={cn(
-          "relative flex h-full w-fit flex-col border-r bg-white dark:bg-neutral-800",
-          open ? "border-slate-200 dark:border-neutral-700 shadow-xl shadow-slate-300/40 dark:shadow-black/40" : "border-slate-200 dark:border-neutral-700",
+          "relative flex h-full w-fit flex-col border-r border-border",
+          open && "shadow-xl shadow-slate-300/40 dark:shadow-black/40",
           className
         )}
         initial={false}

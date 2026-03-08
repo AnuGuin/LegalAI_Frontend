@@ -76,7 +76,7 @@ export function Logo({
               strokeLinejoin="round"
               className={cn(
                 "icon icon-tabler icons-tabler-outline icon-tabler-layout-sidebar-left-collapse",
-                variant === "sidebar" ? "text-slate-600 dark:text-neutral-400" : "text-gray-600 dark:text-gray-300"
+                variant === "sidebar" ? "text-muted-foreground" : "text-gray-600 dark:text-gray-300"
               )}
               initial={{ opacity: 0, rotate: -90, scale: 0.8 }}
               animate={{ opacity: 1, rotate: 0, scale: 1 }}
@@ -154,7 +154,7 @@ export function Logo({
         className={cn(
           "relative z-20 flex items-center rounded-xl text-sm font-medium transition-all duration-300 ease-in-out",
           variant === "sidebar" 
-            ? cn("text-slate-600 dark:text-neutral-100 hover:bg-slate-200 dark:hover:bg-neutral-700 p-2", !collapsed && "w-full") 
+            ? cn("text-sidebar-foreground p-2", collapsed ? "hover:bg-accent rounded-lg" : "hover:bg-sidebar-accent w-full") 
             : "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         )}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
