@@ -6,11 +6,11 @@ import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils"; 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"; 
 import { apiService, type UserProfile } from "@/lib/api.service";
-import ExSwitch from "../ui/switch";
+import ExSwitch from "../../ui/switch";
 import DeleteConfirmationModal from "./delete-confirmation-modal";
-import TocDialog from "../docs/terms/toc-dialog";
-import PrivacyDialog from "../docs/terms/privacy-dialog";
-import { Meter } from "../ui/meter";
+import TocDialog from "../../docs/terms/toc-dialog";
+import PrivacyDialog from "../../docs/terms/privacy-dialog";
+import { Meter } from "../../ui/meter";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const CAPABILITIES_DATA = {
@@ -263,23 +263,6 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
 
                 {activeTab === "data" && (
                      <div className="space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
-                         {(() => {
-                           const checked = userProfile?.preferences?.enhanceModel ?? true;
-                           return (
-                             <div className="p-4 rounded-xl border border-border bg-muted/30 flex items-start gap-4 justify-between">
-                                <div className="space-y-1">
-                                    <h4 className="text-sm font-medium text-foreground">Enhance model for all users</h4>
-                                    <p className="text-xs text-muted-foreground max-w-sm">Allow your content to train our models and improve services. We protect your data privacy.</p>
-                                </div>
-                                <div className="flex-shrink-0 mt-0.5">
-                                    <ExSwitch
-                                        checked={checked} 
-                                        onCheckedChange={(c: boolean) => handleUpdatePreference('enhanceModel', c)} 
-                                    />
-                                </div>
-                             </div>
-                           );
-                         })()}
 
                          <div className="space-y-2">
                             <h4 className="text-sm font-medium text-muted-foreground px-1">Export &amp; Delete</h4>

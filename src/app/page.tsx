@@ -5,7 +5,7 @@ import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
 import { Features, Pricing, CallToAction } from "@/components/landing/sections";
 import { Footer } from "@/components/landing/footer";
-import BounceLoader from "@/components/ui/bounce-loader";
+import { LoaderOne } from "@/components/ui/loader";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { usePageTransition } from "@/hooks/use-page-transition";
 import FAQsTwo from "@/components/landing/faq";
@@ -31,7 +31,7 @@ export default function LandingPage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <BounceLoader />
+            <LoaderOne />
           </motion.div>
         )}
       </AnimatePresence>

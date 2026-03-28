@@ -1,16 +1,18 @@
 "use client";
 
 import { forwardRef, useImperativeHandle, useRef, useEffect, useState } from "react";
-import { TextShimmer } from "../ui/text-shimmer";
 import AITextLoading from "../misc/ai-text-loading";
 import AI_Input from "../misc/ai-chat";
 import { Response as MarkdownResponse } from "../misc/response";
 import { Actions, Action } from "../misc/actions";
-import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Paperclip } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Paperclip, CheckCircle2, AlertTriangle, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { apiService } from "@/lib/api.service";
+import { toast } from "sonner";
 import CookiePolicyDialog from '@/components/docs/terms/cookie-dialog';
 import { Message, Conversation } from "@/types/chat.types";
 import { cn } from "@/lib/utils";
+import { mdToPassage } from "@/lib/mdtotext";
 
 interface ChatMessagesAreaProps {
   user: { name: string; email: string; avatar?: string };
@@ -23,6 +25,7 @@ interface ChatMessagesAreaProps {
   isNewConversationSelected: boolean;
   onRegenerate?: (content: string) => void;
   onFileUpload?: (file: File) => void;
+  onDocumentGenerationRequest?: (data: any) => void;
 }
 
 interface ChatMessagesAreaRef {
@@ -44,43 +47,31 @@ function ChatMessage({
   onRegenerate?: (content: string) => void;
   getPrevUserMessageContent?: (id: string) => string | null;
 }) {
-  const { toast } = useToast();
   const isUser = message.role === "user";
   const displayContent = isStreaming ? streamingContent : message.content;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(displayContent || "");
-    toast({
-      variant: "default",
-      title: "Copied to clipboard!",
-      description: "Message content has been copied.",
-    });
+    const sanitizedContent = mdToPassage(displayContent || "");
+    navigator.clipboard.writeText(sanitizedContent);
+    toast("Copied to clipboard!", { description: "Message content has been copied." });
   };
 
   const handleLike = () => {
-    toast({
-      variant: "success",
-      title: (
+    toast((
         <div className="flex items-center gap-2">
           <ThumbsUp className="w-4 h-4" />
           <span>Liked</span>
         </div>
-      ) as any,
-      description: "Thanks for your feedback!",
-    });
+      ) as any, { description: "Thanks for your feedback!" });
   };
 
   const handleDislike = () => {
-    toast({
-      variant: "destructive",
-      title: (
+    toast.error((
         <div className="flex items-center gap-2">
           <ThumbsDown className="w-4 h-4" />
           <span>Disliked</span>
         </div>
-      ) as any,
-      description: "We'll work to improve our responses.",
-    });
+      ) as any, { description: "We'll work to improve our responses." });
   };
 
   const handleRegenerate = () => {
@@ -93,7 +84,7 @@ function ChatMessage({
   if (isUser) {
     return (
       <div className="flex justify-end w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <div className="max-w-[85%] sm:max-w-[75%] md:max-w-[70%] bg-primary text-primary-foreground rounded-2xl px-4 py-3 shadow-lg">
+        <div className="max-w-[85%] sm:max-w-[75%] md:max-w-[70%] bg-user-chat-bg text-user-chat-fg rounded-2xl px-4 py-3 shadow-lg">
           {Array.isArray(message.attachments) && message.attachments.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-2">
               {message.attachments.map((fileName, idx) => (
@@ -140,6 +131,48 @@ function ChatMessage({
         >
           {displayContent || ""}
         </MarkdownResponse>
+
+        {/* Document Generation Result UI */}
+        {message.metadata?.documentResult && (
+          <div className="mt-4 rounded-xl border border-border/60 bg-muted/40 p-4 space-y-4 max-w-sm">
+            <div className="flex items-start gap-3">
+              {message.metadata.documentResult.generationStatus === "complete" ? (
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
+              ) : (
+                <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+              )}
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  {message.metadata.documentResult.generationStatus === "complete"
+                    ? "Document ready"
+                    : "Document generated (incomplete)"}
+                </p>
+                {message.metadata.documentResult.generationStatus === "incomplete" && (
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {message.metadata.documentResult.warning ??
+                      "Some optional fields used placeholders. Review before submission."}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {message.metadata.documentResult.completionPercentage}% complete � {" "}
+                  {message.metadata.documentResult.filename}
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() =>
+                apiService.downloadBlob(
+                  message.metadata!.documentResult.blob,
+                  message.metadata!.documentResult.filename
+                )
+              }
+              className="w-full rounded-xl"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download
+            </Button>
+          </div>
+        )}
 
         {/* Mobile inline actions  */}
         <div className="flex items-center gap-0.5 mt-2 md:hidden">
@@ -215,10 +248,11 @@ function LoadingMessage() {
 
 
 
-function WelcomeScreen({ user, onSendMessage, selectedMode }: {
+function WelcomeScreen({ user, onSendMessage, selectedMode, onDocumentGenerationRequest }: {
   user: { name: string; email: string; avatar?: string };
   onSendMessage: (content: string, file?: File) => void;
   selectedMode: "chat" | "agentic";
+  onDocumentGenerationRequest?: (data: any) => void;
 }) {
   return (
    <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex items-center justify-center p-4 sm:p-6" style={{ top: 'calc(50% - 50px)' }}>
@@ -229,11 +263,7 @@ function WelcomeScreen({ user, onSendMessage, selectedMode }: {
           </h1>
         </div>
         <div className="w-full hidden sm:block">
-          <AI_Input 
-            onSendMessage={onSendMessage} 
-            mode={selectedMode}
-            showModeIndicator={true}
-          />
+          <AI_Input onSendMessage={onSendMessage} mode={selectedMode} showModeIndicator={true} onDocumentGenerationRequest={onDocumentGenerationRequest} />
         </div>
       </div>
     </div>
@@ -252,7 +282,8 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
       streamingContent,
       onSendMessage,
       isNewConversationSelected,
-      onRegenerate
+      onRegenerate,
+      onDocumentGenerationRequest
     },
     ref
   ) => {
@@ -322,8 +353,9 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
       if (isNewConversationSelected) {
         scrollToTop();
       } else {
-        if (isAtBottomRef.current) 
-+      forceScrollToBottom();
+        if (isAtBottomRef.current) {
+          forceScrollToBottom();
+        }
       }
     }, [combinedMessages.length, isNewConversationSelected]);
 
@@ -373,11 +405,7 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
 
         <div className={cn("pt-1 pb-3 sm:pb-4", !hasMessages && "sm:hidden")}>
             <div className="max-w-6xl mx-auto px-2 sm:px-4">
-              <AI_Input
-                onSendMessage={onSendMessage}
-                mode={selectedMode}
-                showModeIndicator={false}
-              />
+              <AI_Input onSendMessage={onSendMessage} mode={selectedMode} showModeIndicator={false} onDocumentGenerationRequest={onDocumentGenerationRequest} />
             </div>
 
             <div className="flex items-center justify-center font-light text-xs gap-1 mt-2 text-muted-foreground">
@@ -417,3 +445,8 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
 ChatMessagesArea.displayName = "ChatMessagesArea";
 
 export { ChatMessage };
+
+
+
+
+

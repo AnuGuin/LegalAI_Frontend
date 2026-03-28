@@ -1,5 +1,4 @@
-import AuthenticationWrapper from "@/components/auth/auth-wrapper";
-
+import { redirect } from 'next/navigation';
 export default function LoginPage() {
-  return <AuthenticationWrapper mode="login" />;
+  redirect('/auth/citizen?action=login');
 }

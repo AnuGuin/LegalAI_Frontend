@@ -11,7 +11,7 @@ import PrivacyDialog from '@/components/docs/terms/privacy-dialog';
 import Aurora from '@/components/ui/Aurora';
 import { Logo } from '@/components/ui/logo';
 import { Eye, EyeOff, Loader2, Scale, Building2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth as firebaseAuth } from '@/lib/firebase';
 
@@ -33,14 +33,12 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(mode === 'login');
-  const { toast } = useToast();
-
   useEffect(() => {
     setIsLogin(mode === 'login');
   }, [mode]);
 
   const toggleAuthMode = () => {
-    const target = isLogin ? '/auth/citizen/register' : '/auth/citizen/login';
+    const target = isLogin ? '/auth/citizen?action=register' : '/auth/citizen?action=login';
     router.push(target);
   };
 
@@ -48,20 +46,12 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
     e.preventDefault();
 
     if (!email || !password) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+      toast.error("Validation Error", { description: "Please fill in all required fields." });
       return;
     }
 
     if (!isLogin && !name) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter your name.",
-        variant: "destructive",
-      });
+      toast.error("Validation Error", { description: "Please enter your name." });
       return;
     }
 
@@ -93,26 +83,20 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
 
         const userData = {
           name: data.data.user.name,
-          email: data.data.user.email
+          email: data.data.user.email,
+          userType: 'citizen'
         };
 
         localStorage.setItem('user', JSON.stringify(userData));
 
-        toast({
-          title: "Success!",
-          description: isLogin ? "Logged in successfully." : "Account created successfully.",
-        });
+        toast.success("Success!", { description: isLogin ? "Logged in successfully." : "Account created successfully." });
 
         if (onAuthenticated) {
           onAuthenticated(userData);
         }
       }
     } catch (error) {
-      toast({
-        title: "Authentication Failed",
-        description: error instanceof Error ? error.message : "An error occurred. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Authentication Failed", { description: error instanceof Error ? error.message : "An error occurred. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -144,13 +128,11 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
         const userData = {
           name: data.data.user.name,
           email: data.data.user.email,
+          userType: 'citizen'
         };
         localStorage.setItem('user', JSON.stringify(userData));
 
-        toast({
-          title: 'Success!',
-          description: 'Logged in successfully with Google.',
-        });
+        toast.success('Success!', { description: 'Logged in successfully with Google.' });
 
         if (onAuthenticated) {
           onAuthenticated(userData);
@@ -161,11 +143,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
       if (error instanceof Error && error.message.includes('popup-closed-by-user')) {
         // Silently ignore — user cancelled
       } else {
-        toast({
-          title: 'Google Sign-In Failed',
-          description: error instanceof Error ? error.message : 'An error occurred. Please try again.',
-          variant: 'destructive',
-        });
+        toast.error('Google Sign-In Failed', { description: error instanceof Error ? error.message : 'An error occurred. Please try again.' });
       }
     } finally {
       await firebaseAuth.signOut();
@@ -192,10 +170,10 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
               transition={{ duration: 0.7, delay: 0.2, ease: 'easeOut' }}
               className="flex flex-col items-center gap-4"
             >
-              <h1 className="text-5xl font-bold tracking-tight text-primary-foreground mt-4">
+              <h1 className="text-5xl font-bold tracking-tight text-white mt-4">
                 LegalAI
               </h1>
-              <p className="text-primary-foreground/60 text-base max-w-xs leading-relaxed">
+              <p className="text-blue-200/70 text-base max-w-xs leading-relaxed">
                 AI-powered legal intelligence for professionals
               </p>
             </motion.div>
@@ -208,7 +186,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
             >
               <Button
                 variant="default"
-                onClick={() => router.push('/auth/lawyer/login')}
+                onClick={() => router.push('/auth/lawyer?action=login')}
                 className="w-full bg-gradient-to-b from-[#c9a882] to-[#8a6245] text-white/90 font-medium h-11 gap-2 shadow-inner cursor-pointer hover:text-white"
               >
                 <Scale className="h-4 w-4" />
@@ -216,7 +194,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
               </Button>
               <Button
                 variant="default"
-                onClick={() => router.push('/auth/firm/login')}
+                onClick={() => router.push('/auth/firm?action=login')}
                 className="w-full bg-gradient-to-b from-[#c9a882] to-[#8a6245] text-white/90 font-medium h-11 gap-2 shadow-inner cursor-pointer hover:text-white"
               >
                 <Building2 className="h-4 w-4" />
@@ -420,7 +398,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
             </div>
             <Button
               variant="ghost"
-              onClick={() => router.push('/auth/lawyer/login')}
+              onClick={() => router.push('/auth/lawyer?action=login')}
               className="w-full text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800/50 gap-2 h-10 text-sm"
             >
               <Scale className="h-4 w-4" />
@@ -428,7 +406,7 @@ export default function LoginForm({ onAuthenticated, mode = 'login' }: LoginForm
             </Button>
             <Button
               variant="ghost"
-              onClick={() => router.push('/auth/firm/login')}
+              onClick={() => router.push('/auth/firm?action=login')}
               className="w-full text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800/50 gap-2 h-10 text-sm"
             >
               <Building2 className="h-4 w-4" />

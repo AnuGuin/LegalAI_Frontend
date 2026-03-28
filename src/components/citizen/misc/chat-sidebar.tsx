@@ -6,11 +6,11 @@ import { X } from "lucide-react";
 import {
   Sidebar,
   SidebarBody,
-} from "@/components/ui/sidebar";
+} from "@/components/citizen/misc/sidebar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
-import ProfileDropdown from "@/components/misc/profile-dropdown";
+import ProfileDropdown from "@/components/citizen/misc/profile-dropdown";
 import { RecentChatSkeleton } from "../chat/recent-chat-sekeleton";
 
 interface ChatSidebarProps {
@@ -56,7 +56,7 @@ function SidebarInnerContent({
 }: SidebarInnerContentProps) {
   return (
     <>
-      <div className="flex flex-1 flex-col overflow-hidden transition-all duration-500 ease-out">
+      <div className="flex flex-1 flex-col overflow-hidden transition-all duration-200 ease-linear">
         {/* Logo row */}
           <div className={cn("flex items-center", isExpanded ? "justify-between" : "justify-center")}>
           <Logo
@@ -85,7 +85,7 @@ function SidebarInnerContent({
           <Button
             onClick={onNewConversation}
             className={cn(
-              "w-full transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] text-sidebar-foreground hover:bg-sidebar-accent rounded-lg text-sm font-medium flex-shrink-0 shadow-none focus:outline-none focus-visible:ring-0",
+              "w-full transition-all duration-200 ease-linear text-sidebar-foreground hover:bg-sidebar-accent rounded-lg text-sm font-medium flex-shrink-0 shadow-none focus:outline-none focus-visible:ring-0",
               isExpanded
                 ? "justify-start gap-2 px-3 py-2 text-left bg-sidebar border border-sidebar-border/20 focus:outline-none focus-visible:ring-0"
                 : "justify-center p-2 bg-transparent border-none"
@@ -100,7 +100,7 @@ function SidebarInnerContent({
               strokeLinecap="round"
               strokeLinejoin="round"
               className={cn(
-                "shrink-0 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                "shrink-0 transition-all duration-200 ease-linear",
                 isExpanded ? "h-3 w-3" : "h-5 w-5"
               )}
             >
@@ -118,7 +118,7 @@ function SidebarInnerContent({
         </div>
 
         {/* Recent Chats Section */}
-        <div className="mt-4 flex flex-col flex-1 min-h-0 gap-1 transition-all duration-500 ease-out">
+        <div className="mt-4 flex flex-col flex-1 min-h-0 gap-1 transition-all duration-200 ease-linear">
           {isExpanded ? (
             <>
               <div className="px-2 py-1 flex-shrink-0">
@@ -126,7 +126,7 @@ function SidebarInnerContent({
                   Recents
                 </h3>
               </div>
-              <div className="flex-1 overflow-y-auto overflow-x-hidden sidebar-scrollbar min-h-0">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden sidebar-scrollbar min-h-0 -mr-3 pr-3">
                 {isLoadingConversations ? (
                   <RecentChatSkeleton />
                 ) : conversations && conversations.length > 0 ? (
@@ -135,7 +135,7 @@ function SidebarInnerContent({
                       key={conversation.id}
                       onClick={() => onSelectConversation(conversation.id)}
                       className={cn(
-                        "flex items-center rounded-lg text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] text-left w-full gap-3 px-3 py-2 flex-shrink-0",
+                        "flex items-center rounded-lg text-sm font-medium transition-all duration-200 ease-linear text-left w-full gap-3 px-3 py-2 flex-shrink-0",
                         activeConversationId === conversation.id
                           ? "bg-sidebar-accent text-sidebar-accent-foreground"
                           : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -158,7 +158,7 @@ function SidebarInnerContent({
             </>
           ) : (
             <div className="flex justify-center p-2">
-              <div className="flex items-center justify-center h-8 w-8 rounded-md text-sidebar-foreground/60 transition-colors duration-300 ease-in-out">
+              <div className="flex items-center justify-center h-8 w-8 rounded-md text-sidebar-foreground/60 transition-colors duration-200 ease-in-out">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 8l0 4l2 2" /><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" /></svg>
               </div>
             </div>
@@ -169,7 +169,7 @@ function SidebarInnerContent({
       {/* User Profile */}
       <div
         className={cn(
-          "transition-all duration-500 ease-out flex-shrink-0",
+          "transition-all duration-200 ease-linear flex-shrink-0",
           !isExpanded && "flex justify-center w-full"
         )}
       >
@@ -186,7 +186,7 @@ function SidebarInnerContent({
           alignOffset={isExpanded ? 0 : 20}
           onSignOut={onLogout}
           className={cn(
-            "transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] flex-shrink-0",
+            "transition-all duration-200 ease-linear flex-shrink-0",
             !isExpanded && "w-fit"
           )}
         />
@@ -238,10 +238,10 @@ export default function ChatSidebar({
         className="fixed inset-y-0 left-0 z-50 md:hidden w-72 flex flex-col border-r"
         initial={false}
         animate={{ x: mobileOpen ? 0 : -288 }}
-        transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+        transition={{ duration: 0.2, ease: "linear" }}
       >
           <div className={cn(
-            "justify-between gap-4 p-3 h-full flex flex-col transition-colors duration-300",
+            "justify-between gap-4 p-3 h-full flex flex-col transition-colors duration-200",
             mobileOpen ? "bg-sidebar" : "bg-background"
           )}>
           <SidebarInnerContent
@@ -262,7 +262,7 @@ export default function ChatSidebar({
           open={open}
           setOpen={setOpen}
           className={cn(
-            "justify-between gap-4 p-3 h-full flex flex-col transition-colors duration-300 ease-out",
+            "justify-between gap-4 p-3 h-full flex flex-col transition-colors duration-200 ease-linear",
             open ? "bg-sidebar" : "bg-background"
           )}
         >

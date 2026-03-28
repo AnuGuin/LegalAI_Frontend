@@ -1,5 +1,5 @@
-import LawyerAuthForm from '@/components/auth/lawyer-auth-form';
+import { redirect } from 'next/navigation';
 
 export default function LawyerLoginPage() {
-  return <LawyerAuthForm mode="login" />;
+  redirect('/auth/lawyer?action=login');
 }

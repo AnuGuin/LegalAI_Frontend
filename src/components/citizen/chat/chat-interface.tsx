@@ -1,16 +1,17 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ChatSidebar from "@/components/misc/chat-sidebar";
+import ChatSidebar from "@/components/citizen/misc/chat-sidebar";
 import { ChatMessagesArea } from "./chat-message";
 import { ChatModeSelector } from "../misc/mode-selector";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { apiService, type Message as BackendMessage } from "@/lib/api.service";
 import { type Message, type Conversation } from "@/types/chat.types";
 import { ConversationSkeleton } from "./conversation-skeleton";
 import { DeleteConversationDialog } from "./delete-conversation-dialog";
 import { useRouter } from "next/navigation";
 import { useStream } from "@/hooks/use-stream";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 interface ChatInterfaceProps {
   user: { name: string; email: string; avatar?: string };
@@ -74,8 +75,6 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
     null
   );
   const router = useRouter();
-  const { toast } = useToast();
-
   const activeConversation = useMemo(
     () => conversations.find((c) => c.id === activeConversationId) ?? null,
     [conversations, activeConversationId]
@@ -87,11 +86,7 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
       const message =
         (error as any)?.body?.message ||
         (error instanceof Error ? error.message : defaultMessage);
-      toast({
-        title,
-        description: message,
-        variant: "destructive",
-      });
+      toast.error('', { description: message });
     },
     [toast]
   );
@@ -263,13 +258,7 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
         console.error("Failed to send message:", error);
         const status = (error as any)?.status;
         const body = (error as any)?.body;
-        toast({
-          title: "Failed to send message",
-          description:
-            (body?.message || (error instanceof Error ? error.message : "Please try again")) +
-            (status ? ` (status ${status})` : ""),
-          variant: "destructive",
-        });
+        toast.error("Failed to send message", { description: (body?.message || (error instanceof Error ? error.message : "Please try again"))});
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           content: "I apologize, but I'm having trouble processing your request right now. Please try again.",
@@ -336,26 +325,14 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
         if (result.link) {
           try {
             await navigator.clipboard.writeText(result.link);
-            toast({
-              title: "Share link copied",
-              description: "A secure shareable link has been created and copied to your clipboard.",
-            });
+            toast("Share link copied", { description: "A secure shareable link has been created and copied to your clipboard." });
           } catch {
-            toast({
-              title: "Share link created",
-              description: result.link,
-            });
+            toast.success("Share link created", { description: result.link });
           }
         } else if (result.message) {
-          toast({
-            title: "Share status",
-            description: result.message,
-          });
+          toast("Share status", { description: result.message });
         } else {
-          toast({
-            title: "Sharing updated",
-            description: "Sharing status updated successfully.",
-          });
+          toast("Sharing updated", { description: "Sharing status updated successfully." });
         }
       } catch (error) {
         handleErrorToast("Failed to share conversation", error);
@@ -377,10 +354,7 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
         setActiveConversationId(null);
         updateConversationUrl(null);
       }
-      toast({
-        title: "Conversation deleted",
-        description: "The conversation has been deleted successfully.",
-      });
+      toast("Conversation deleted", { description: "The conversation has been deleted successfully." });
     } catch (error) {
       handleErrorToast("Failed to delete", error);
     } finally {
@@ -404,27 +378,28 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
   );
 
   return (
-    <div
-      className="flex h-screen relative overflow-hidden chat-interface-container"
-      style={{ maxWidth: "100vw", height: "100dvh" }}
-    >
-      <BackgroundLayer />
-
-      <ChatSidebar
-        user={user}
-        conversations={sidebarConversations}
-        activeConversationId={activeConversationId || undefined}
-        onSelectConversation={(id) => { handleSelectConversation(id); setIsMobileSidebarOpen(false); }}
-        onNewConversation={() => { handleNewConversation(); setIsMobileSidebarOpen(false); }}
-        onLogout={onLogout}
-        isLoadingConversations={isLoadingConversations}
-        mobileOpen={isMobileSidebarOpen}
-        onMobileClose={() => setIsMobileSidebarOpen(false)}
-      />
-
+    <SidebarProvider>
       <div
-        className="flex-1 flex flex-col min-h-0 relative z-10 min-w-0 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] w-full md:max-w-[calc(100vw-65px)]"
+        className="flex h-screen relative overflow-hidden chat-interface-container w-full"
+        style={{ height: "100dvh" }}
       >
+        <BackgroundLayer />
+
+        <ChatSidebar
+          user={user}
+          conversations={sidebarConversations}
+          activeConversationId={activeConversationId || undefined}
+          onSelectConversation={(id) => { handleSelectConversation(id); setIsMobileSidebarOpen(false); }}
+          onNewConversation={() => { handleNewConversation(); setIsMobileSidebarOpen(false); }}
+          onLogout={onLogout}
+          isLoadingConversations={isLoadingConversations}
+          mobileOpen={isMobileSidebarOpen}
+          onMobileClose={() => setIsMobileSidebarOpen(false)}
+        />
+
+        <div
+          className="flex-1 flex flex-col min-h-0 relative z-10 min-w-0 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] w-full"
+        >
         <div className="sticky top-0 z-20 bg-background">
           <ChatModeSelector
             variant={activeConversation ? "chat-selected" : "default"}
@@ -471,6 +446,7 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
         conversationTitle={activeConversation?.title}
       />
     </div>
+    </SidebarProvider>
   );
 }
 

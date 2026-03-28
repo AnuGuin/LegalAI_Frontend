@@ -2,7 +2,7 @@
 
 import { AuthPage } from "@/components/auth/auth-page";
 import { motion, AnimatePresence } from "framer-motion";
-import BounceLoader from "@/components/ui/bounce-loader";
+import { LoaderOne } from "@/components/ui/loader";
 import { usePageTransition } from "@/hooks/use-page-transition";
 
 interface User {
@@ -33,7 +33,7 @@ export default function AuthenticationWrapper({ mode = 'login' }: Authentication
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <BounceLoader />
+            <LoaderOne />
           </motion.div>
         )}
       </AnimatePresence>

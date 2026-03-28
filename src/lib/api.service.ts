@@ -68,6 +68,131 @@ interface UserStats {
   translationCount: number;
 }
 
+interface TemplateField {
+  name: string;
+  required: boolean;       
+  field_type: string;      
+  description: string;     
+  placeholder: string;     
+}
+
+interface TemplateSchema {
+  template_name: string;
+  all_fields: TemplateField[];
+  critical_fields: string[];
+  optional_fields: string[];
+  total_fields: number;
+  supports_auto_generation: boolean;
+}
+
+
+interface Document {
+  id: string;
+  title: string;
+  format: string;
+  fileUrl?: string;
+  createdAt: string;
+}
+
+interface GenerateDocumentResult {
+  documentId: string;          
+  generationStatus: string;    
+  completionPercentage: number;
+  warning: string | null;      
+  blob: Blob;                  
+  filename: string;            
+  mimeType: string;            
+}
+
+interface MatterParty {
+  role: 'client' | 'opponent' | 'other';
+  type?: 'company' | 'individual';
+  name: string;
+  phone?: string;
+  email?: string;
+  counsel?: string;
+  roleLabel?: string;
+}
+
+interface CreateMatterPayload {
+  title: string;
+  practiceArea: string;
+  court: string;
+  caseNumber?: string;
+  priority: 'low' | 'medium' | 'high';
+  description?: string;
+  parties: MatterParty[];
+}
+
+interface Matter {
+  id: string;
+  title: string;
+  practiceArea: string;
+  court: string;
+  caseNumber?: string;
+  priority: 'low' | 'medium' | 'high';
+  description?: string;
+  parties: MatterParty[];
+  status?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface OmitMatter extends Omit<Matter, 'priority' | 'court' | 'description'> {}
+
+export interface MatterDetail extends OmitMatter {
+  description: string;
+  practiceArea: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  client: MatterParty;
+  opponent?: MatterParty;
+  court?: string;
+  caseNumber?: string;
+  filingDate?: string;
+}
+
+export interface MatterMessage {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  createdAt: string;
+  attachments?: string[];
+  metadata?: any;
+}
+
+export interface MatterDocument {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadedAt: string;
+  uploadedBy?: string;
+  url?: string;
+}
+
+export interface MatterDeadline {
+  id: string;
+  title: string;
+  notes?: string;
+  day: string;
+  month: string;
+  urgency: 'normal' | 'high' | 'urgent';
+  done: boolean;
+  dueDate: string;
+}
+
+export interface WorkspaceMemorySection {
+  category: string;
+  icon: any; // We'll map this on frontend
+  points: string[];
+}
+
+export interface WorkspaceMemory {
+  id: string;
+  sections: WorkspaceMemorySection[];
+  lastUpdated: string;
+}
+
 class ApiService {
   private ApiError = class ApiError extends Error {
     status: number
@@ -308,7 +433,6 @@ class ApiService {
       throw new Error('Failed to send message');
     }
 
-    // Track usage locally
     if (file || mode === 'AGENTIC') {
        this.updateLocalStats('doc');
     }
@@ -407,7 +531,243 @@ class ApiService {
   async getTranslationHistory(): Promise<ApiResponse<Translation[]>> {
     return await this.request<ApiResponse<Translation[]>>('/api/translation/history');
   }
+
+  // ==================== Document APIs ====================
+
+  async generateDocument(
+    templateName: string,
+    data: Record<string, any>,
+    format: 'pdf' | 'docx' | 'txt' = 'pdf'
+  ): Promise<GenerateDocumentResult> {
+    const token = this.getAuthToken();
+    const url = `${NEXT_PUBLIC_API_URL}/api/documents`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ template_name: templateName, data, format }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      let msg = text;
+      try {
+        const parsed = JSON.parse(text);
+        msg = parsed.message || parsed.error || text;
+      } catch { /* not JSON */ }
+      throw new this.ApiError(response.status, `HTTP ${response.status}: ${msg}`);
+    }
+
+    const blob = await response.blob();
+
+    const disposition = response.headers.get('Content-Disposition') ?? '';
+    const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+    const filename = filenameMatch ? filenameMatch[1] : `document.${format}`;
+
+    return {
+      blob,
+      filename,
+      mimeType: response.headers.get('Content-Type') ?? 'application/octet-stream',
+      documentId: response.headers.get('X-Document-Id') ?? '',
+      generationStatus: response.headers.get('X-Generation-Status') ?? 'complete',
+      completionPercentage: parseInt(response.headers.get('X-Completion-Percentage') ?? '100', 10),
+      warning: response.headers.get('X-Generation-Warning') ?? null,
+    };
+  }
+
+  downloadBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async getDocuments(): Promise<Document[]> {
+    const response = await this.request<ApiResponse<Document[]>>('/api/documents');
+    if (!response.success || !response.data) throw new Error('Failed to fetch documents');
+    return response.data;
+  }
+
+  async getDocument(id: string): Promise<Document> {
+    const response = await this.request<ApiResponse<Document>>(`/api/documents/${id}`);
+    if (!response.success || !response.data) throw new Error('Failed to fetch document');
+    return response.data;
+  }
+
+  async deleteDocument(id: string): Promise<void> {
+    const response = await this.request<ApiResponse<void>>(`/api/documents/${id}`, { method: 'DELETE' });
+    if (!response.success) throw new Error('Failed to delete document');
+  }
+
+  async getDocumentTemplates(): Promise<{ available_templates: string[]; total_count: number }> {
+    const response = await this.request<ApiResponse<{ available_templates: string[]; total_count: number }>>('/api/documents/templates');
+    if (!response.success || !response.data) throw new Error('Failed to fetch document templates');
+    return response.data;
+  }
+
+
+  async getTemplateSchema(templateName: string): Promise<TemplateSchema> {
+    const response = await this.request<ApiResponse<TemplateSchema>>(
+      `/api/documents/templates/${encodeURIComponent(templateName)}/schema`
+    );
+    if (!response.success || !response.data) throw new Error('Failed to fetch template schema');
+    return response.data;
+  }
+
+  async downloadDocument(id: string): Promise<void> {
+    const token = this.getAuthToken();
+    const url = `${NEXT_PUBLIC_API_URL}/api/documents/${id}/download`;
+
+    const response = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+
+    if (!response.ok) throw new this.ApiError(response.status, `Download failed: ${response.status}`);
+
+    const blob = await response.blob();
+    const disposition = response.headers.get('Content-Disposition') ?? '';
+    const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+    const filename = filenameMatch ? filenameMatch[1] : `document`;
+    this.downloadBlob(blob, filename);
+  }
+
+  // ==================== Matter Workspace APIs ====================
+
+  async createMatter(payload: CreateMatterPayload): Promise<Matter> {
+    const response = await this.request<ApiResponse<Matter>>(
+      '/api/lawyer/matter',
+      { method: 'POST', body: JSON.stringify(payload) }
+    );
+    if (!response.success || !response.data) throw new Error(response.message || 'Failed to create matter');
+    return response.data;
+  }
+
+  async getMatter(matterId: string): Promise<MatterDetail> {
+    const response = await this.request<ApiResponse<MatterDetail>>(`/api/lawyer/matter/${matterId}`);
+    if (!response.success || !response.data) throw new Error(response.message || 'Failed to fetch matter');
+    return response.data;
+  }
+
+  async getMatterMessages(matterId: string): Promise<MatterMessage[]> {
+    const listResponse = await this.request<ApiResponse<any[]>>(`/api/lawyer/chat/conversations?matterId=${matterId}`);
+    if (!listResponse.success || !listResponse.data || listResponse.data.length === 0) return [];
+
+    const convId = listResponse.data[0].id;
+    const convResponse = await this.request<ApiResponse<any>>(`/api/lawyer/chat/conversations/${convId}`);
+    if (!convResponse.success || !convResponse.data) throw new Error('Failed to fetch messages');
+    return convResponse.data.messages;
+  }
+
+  async sendMatterMessage(matterId: string, message: string): Promise<MatterMessage> {
+    const listResponse = await this.request<ApiResponse<any[]>>(`/api/lawyer/chat/conversations?matterId=${matterId}`);
+    let convId;
+
+    if (!listResponse.success || !listResponse.data || listResponse.data.length === 0) {
+      const createResponse = await this.request<ApiResponse<any>>('/api/lawyer/chat/conversations', {
+        method: 'POST', body: JSON.stringify({ matterId })
+      });
+      convId = createResponse.data.id;
+    } else {
+      convId = listResponse.data[0].id;
+    }
+
+    const response = await this.request<ApiResponse<any>>(
+      `/api/lawyer/chat/conversations/${convId}/messages`,
+      { method: 'POST', body: JSON.stringify({ message }) }
+    );
+    if (!response.success || !response.data) throw new Error('Failed to send message');
+    return response.data.assistantMessage;
+  }
+
+  async getMatterDocuments(matterId: string): Promise<MatterDocument[]> {
+    const response = await this.request<ApiResponse<MatterDocument[]>>(`/api/lawyer/matter/${matterId}/documents`);
+    if (!response.success || !response.data) throw new Error('Failed to fetch documents');
+    return response.data;
+  }
+
+  async uploadMatterDocument(matterId: string, file: File): Promise<MatterDocument> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await this.request<ApiResponse<MatterDocument>>(
+      `/api/lawyer/matter/${matterId}/documents`,
+      { method: 'POST', body: formData }
+    );
+    if (!response.success || !response.data) throw new Error('Failed to upload document');
+    return response.data;
+  }
+
+  async deleteMatterDocument(matterId: string, docId: string): Promise<void> {
+    const response = await this.request<ApiResponse<void>>(
+      `/api/lawyer/matter/${matterId}/documents/${docId}`,
+      { method: 'DELETE' }
+    );
+    if (!response.success) throw new Error('Failed to delete document');
+  }
+
+  async getMatterDeadlines(matterId: string): Promise<MatterDeadline[]> {
+    const response = await this.request<ApiResponse<any[]>>(`/api/lawyer/matter/${matterId}/events?isDeadline=true`);
+    if (!response.success || !response.data) throw new Error('Failed to fetch deadlines');
+    return response.data.map((event: any) => ({
+      id: event.id,
+      title: event.title,
+      notes: event.notes,
+      day: new Date(event.eventDate).getDate().toString().padStart(2, '0'),
+      month: new Date(event.eventDate).toLocaleString('default', { month: 'short' }).toUpperCase(),
+      urgency: event.isUrgent ? 'urgent' : ((event.daysRemaining !== null && event.daysRemaining < 14) ? 'high' : 'normal'),
+      done: event.status === 'COMPLETED',
+      dueDate: event.eventDate,
+    }));
+  }
+
+  async addMatterDeadline(matterId: string, payload: Omit<MatterDeadline, 'id' | 'done'>): Promise<MatterDeadline> {
+    const response = await this.request<ApiResponse<any>>(
+      `/api/lawyer/matter/${matterId}/events`,
+      { method: 'POST', body: JSON.stringify({ title: payload.title, eventDate: payload.dueDate, isDeadline: true, notes: payload.notes }) }
+    );
+    if (!response.success || !response.data) throw new Error('Failed to add deadline');
+    const event = response.data;
+    return {
+      id: event.id, title: event.title, notes: event.notes,
+      day: new Date(event.eventDate).getDate().toString().padStart(2, '0'),
+      month: new Date(event.eventDate).toLocaleString('default', { month: 'short' }).toUpperCase(),
+      urgency: event.isUrgent ? 'urgent' : ((event.daysRemaining !== null && event.daysRemaining < 14) ? 'high' : 'normal'),
+      done: event.status === 'COMPLETED', dueDate: event.eventDate
+    };
+  }
+
+  async toggleMatterDeadline(matterId: string, deadlineId: string, done: boolean): Promise<MatterDeadline> {
+    const response = await this.request<ApiResponse<any>>(
+      `/api/lawyer/matter/${matterId}/events/${deadlineId}`,
+      { method: 'PATCH', body: JSON.stringify({ status: done ? 'COMPLETED' : 'PENDING' }) }
+    );
+    if (!response.success || !response.data) throw new Error('Failed to update deadline');
+    const event = response.data;
+    return {
+      id: event.id, title: event.title, notes: event.notes,
+      day: new Date(event.eventDate).getDate().toString().padStart(2, '0'),
+      month: new Date(event.eventDate).toLocaleString('default', { month: 'short' }).toUpperCase(),
+      urgency: event.isUrgent ? 'urgent' : ((event.daysRemaining !== null && event.daysRemaining < 14) ? 'high' : 'normal'),
+      done: event.status === 'COMPLETED', dueDate: event.eventDate
+    };
+  }
+
+  async getMatterMemory(matterId: string): Promise<WorkspaceMemory> {
+    const response = await this.request<ApiResponse<WorkspaceMemory>>(`/api/lawyer/matter/${matterId}/memory`);
+    if (!response.success || !response.data) throw new Error('Failed to fetch workspace memory');
+    return response.data;
+  }
 }
 
 export const apiService = new ApiService();
-export type { UserProfile, Conversation, Message, SendMessageResponse, Translation, UserStats };
+export type {
+  UserProfile, Conversation, Message, SendMessageResponse, Translation, UserStats,
+  Document, TemplateField, TemplateSchema, GenerateDocumentResult,
+  Matter, CreateMatterPayload, MatterParty,
+};

@@ -14,6 +14,7 @@ export interface Message {
 
 export interface MessageMetadata {
   cached?: boolean;
+  documentResult?: any;
   tools_used?: Array<{
     tool: string;
     query_time?: number;

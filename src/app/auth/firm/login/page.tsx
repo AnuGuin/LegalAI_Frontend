@@ -1,4 +1,4 @@
-import FirmAuthForm from '@/components/auth/firm-auth-form';
+import { redirect } from 'next/navigation';
 export default function FirmLoginPage() {
-  return <FirmAuthForm mode="login" />;
+  redirect('/auth/firm?action=login');
 }

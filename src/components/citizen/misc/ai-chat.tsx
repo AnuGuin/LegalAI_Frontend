@@ -1,12 +1,12 @@
 "use client";
 
-import { Paperclip, Send, X, File, FileText, Image, Languages } from "lucide-react";
+import { Paperclip, ArrowRight, X, File, FileText, Image, Languages } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { apiService } from "@/lib/api.service";
 import {
     DropdownMenu,
@@ -15,6 +15,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TranslateModal } from "../chat/translate-modal";
+import { DocumentGenerationModal } from "../chat/document-generation-modal";
+import { usePathname } from "next/navigation";
 
 interface Tool {
     id: string;
@@ -32,9 +34,12 @@ interface UploadedFile {
 
 interface AI_InputProps {
     onSendMessage?: (message: string, file?: File) => void | Promise<void>;
+    onDocumentGenerationRequest?: (result: any) => void;
     mode?: 'chat' | 'agentic';
     disabled?: boolean;
     showModeIndicator?: boolean;
+    wrapperClassName?: string;
+    inputMinHeight?: number;
 }
 
 const tools: Tool[] = [
@@ -43,7 +48,7 @@ const tools: Tool[] = [
         label: 'Doc Generate',
         icon: (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                 <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
                 <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
                 <path d="M9 12h6" />
@@ -56,7 +61,7 @@ const tools: Tool[] = [
         label: 'Translate',
         icon: (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                 <path d="M9 6.371c0 4.418 -2.239 6.629 -5 6.629" />
                 <path d="M4 6.371h7" />
                 <path d="M5 9c0 2.144 2.252 3.908 6 4" />
@@ -80,12 +85,14 @@ const ALLOWED_FILE_TYPES = [
     'image/gif'
 ];
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-export default function AI_Input({ onSendMessage, mode = 'chat', disabled = false, showModeIndicator = true }: AI_InputProps) {
+export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, mode = 'chat', disabled = false, showModeIndicator = true, wrapperClassName, inputMinHeight = 52 }: AI_InputProps) {
+    const pathname = usePathname();
+    const isLawyerModule = pathname?.startsWith('/dashboard') || pathname?.startsWith('/assistant');
     const [value, setValue] = useState("");
     const { textareaRef, adjustHeight } = useAutoResizeTextarea({
-        minHeight: 52,
+        minHeight: inputMinHeight,
         maxHeight: 200,
     });
     const [showTools, setShowTools] = useState(false);
@@ -93,6 +100,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
     const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
     const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
+    const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
     const [translateLanguages, setTranslateLanguages] = useState<{
         sourceLang: string;
         targetLang: string;
@@ -106,8 +114,6 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
     const [isDetecting, setIsDetecting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-    const { toast } = useToast();
-
     useEffect(() => {
         if (mode !== 'agentic' || !value.trim() || value.trim().length < 3) {
             setDetectedLanguage(null);
@@ -121,7 +127,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
             try {
                 setIsDetecting(true);
                 const response = await apiService.detectLanguage(value.trim());
-                
+
                 if (response.success && response.data) {
                     setDetectedLanguage(response.data);
                 }
@@ -130,7 +136,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
             } finally {
                 setIsDetecting(false);
             }
-        }, 800); 
+        }, 800);
         return () => {
             if (debounceTimerRef.current) {
                 clearTimeout(debounceTimerRef.current);
@@ -142,11 +148,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
         const files = e.target.files;
         if (!files) return;
         if (mode !== 'agentic') {
-            toast({
-                title: "File upload not available",
-                description: "Please switch to Agentic mode to upload files.",
-                variant: "destructive",
-            });
+            toast.error("File upload not available", { description: "Please switch to Agentic mode to upload files." });
             return;
         }
 
@@ -158,8 +160,8 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                 errors.push(`${file.name}: Invalid file type. Only PDF, DOC, DOCX, TXT, and images are allowed.`);
                 return;
             }
-                if (file.size > MAX_FILE_SIZE) {
-                    errors.push(`${file.name}: File too large. Maximum size is ${Math.round(MAX_FILE_SIZE / (1024 * 1024))}MB.`);
+            if (file.size > MAX_FILE_SIZE) {
+                errors.push(`${file.name}: File too large. Maximum size is ${Math.round(MAX_FILE_SIZE / (1024 * 1024))}MB.`);
                 return;
             }
 
@@ -172,17 +174,13 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
             });
         });
         if (errors.length > 0) {
-            toast({
-                title: "File validation failed",
-                description: errors[0],
-                variant: "destructive",
-            });
+            toast.error("File validation failed", { description: errors[0] });
         }
 
         if (validFiles.length > 0) {
             setUploadedFiles(prev => [...prev, ...validFiles]);
         }
-        
+
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
@@ -211,19 +209,15 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
 
     const handleSubmit = async () => {
         if (!value.trim() && uploadedFiles.length === 0) return;
-        
+
         if (uploadedFiles.length > 0 && mode !== 'agentic') {
-            toast({
-                title: "File upload error",
-                description: "Files can only be sent in Agentic mode.",
-                variant: "destructive",
-            });
+            toast.error("File upload error", { description: "Files can only be sent in Agentic mode." });
             return;
         }
 
         if (disabled) return;
         let messageContent = value.trim();
-        
+
         if (translateLanguages) {
             messageContent = `Please translate the following text from ${translateLanguages.sourceName} to ${translateLanguages.targetName}:\n\n${messageContent}`;
         }
@@ -235,18 +229,18 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
         });
         setValue("");
         adjustHeight(true);
-        
+
         if (mode === 'agentic') {
             setUploadedFiles([]);
         }
-        
+
         setDetectedLanguage(null);
-        
+
         if (onSendMessage) {
             const fileToSend = uploadedFiles.length > 0 ? uploadedFiles[0].file : undefined;
             await onSendMessage(messageContent, fileToSend);
         }
-        
+
     };
 
     const handleFocus = () => {
@@ -278,11 +272,11 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
 
     return (
         <div className="w-full py-2 sm:py-4 overflow-visible">
-            <div className="relative max-w-xl w-full mx-auto overflow-visible px-2 sm:px-0">
+            <div className={cn("relative w-full overflow-visible", wrapperClassName ?? "max-w-2xl mx-auto px-2 sm:px-0")}>
                 {/* Main container with extension for doc upload */}
                 <div className={cn(
-                    "relative ring-1 ring-black/10 dark:ring-white/10 transition-all duration-300 overflow-visible bg-foreground/5 dark:bg-input/30",
-                    uploadedFiles.length > 0 ? "rounded-2xl" : "rounded-full sm:rounded-2xl",
+                    "relative ring-1 ring-black/10 dark:ring-white/10 transition-all duration-300 overflow-visible bg-background dark:bg-input/30 shadow-[0_4px_14px_rgba(0,0,0,0.05)] dark:shadow-none",
+                    uploadedFiles.length > 0 ? "rounded-3xl" : "rounded-[28px] sm:rounded-[32px]",
                     isFocused && "ring-black/20 dark:ring-white/20",
                     disabled && "opacity-50 cursor-not-allowed"
                 )}>
@@ -294,7 +288,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                         className={cn(
                             "relative flex items-center sm:flex-col sm:items-stretch transition-all duration-300 ease-in-out w-full text-left overflow-visible",
                             "bg-transparent",
-                            uploadedFiles.length > 0 ? "rounded-t-2xl" : "rounded-full sm:rounded-2xl",
+                            uploadedFiles.length > 0 ? "rounded-t-3xl" : "rounded-[28px] sm:rounded-[32px]",
                             disabled ? "cursor-not-allowed" : "cursor-text"
                         )}
                         onClick={handleContainerClick}
@@ -312,13 +306,14 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                     onClick={() => !disabled && fileInputRef.current?.click()}
                                     disabled={disabled}
                                     className={cn(
-                                        "rounded-full p-2 hover:bg-foreground/10 transition-colors relative",
+                                        "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors relative flex items-center justify-center",
+                                        "bg-muted text-muted-foreground/80 hover:bg-muted/80",
                                         disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                                     )}
                                 >
-                                    <Paperclip className="w-4 h-4 text-foreground/40" />
+                                    <Paperclip className="w-5 h-5 text-inherit" />
                                     {uploadedFiles.length > 0 && (
-                                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-sky-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
                                             {uploadedFiles.length}
                                         </span>
                                     )}
@@ -326,84 +321,90 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                             )}
                             {mode === 'chat' && (
                                 <div className="flex items-center gap-1">
-                                <DropdownMenu onOpenChange={setShowTools}>
-                                    <DropdownMenuTrigger asChild disabled={disabled}>
-                                        <button
+                                    <DropdownMenu onOpenChange={setShowTools}>
+                                        <DropdownMenuTrigger asChild disabled={disabled}>
+                                            <button
+                                                type="button"
+                                                disabled={disabled}
+                                                className={cn(
+                                                    "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors",
+                                                    selectedTool || showTools
+                                                        ? "bg-primary/80 text-primary-foreground dark:bg-primary/80"
+                                                        : "bg-muted text-muted-foreground/80 hover:bg-muted/80",
+                                                    disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                                                )}
+                                            >
+                                                <motion.div
+                                                    animate={{ rotate: showTools ? 180 : 0, scale: showTools || selectedTool ? 1.1 : 1 }}
+                                                    transition={{ type: "spring", stiffness: 260, damping: 25 }}
+                                                >
+                                                    {selectedTool ? selectedTool.icon : (
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("w-5 h-5", showTools ? "text-primary-foreground" : "text-inherit")}>
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5" />
+                                                        </svg>
+                                                    )}
+                                                </motion.div>
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-48 p-2 backdrop-blur-sm border border-border/60 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-popover">
+                                            <div className="space-y-1">
+                                                {tools.map((tool) => (
+                                                    <DropdownMenuItem key={tool.id} asChild>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (tool.id === 'translate') {
+                                                                    setSelectedTool(tool);
+                                                                    setIsTranslateModalOpen(true);
+                                                                    setShowTools(false);
+                                                                } else if (tool.id === 'doc-generate') {
+                                                                    setSelectedTool(tool);
+                                                                    setIsDocumentModalOpen(true);
+                                                                    setShowTools(false);
+                                                                } else {
+                                                                    setSelectedTool(tool);
+                                                                    setShowTools(false);
+                                                                }
+                                                            }}
+                                                            className="w-full flex items-center gap-3 p-3 hover:bg-accent rounded-xl transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-border/50"
+                                                        >
+                                                            <div className="flex items-center gap-2 flex-1">
+                                                                {tool.icon}
+                                                                <span className="text-sm font-medium text-foreground tracking-tight leading-tight whitespace-nowrap group-hover:text-foreground transition-colors">
+                                                                    {tool.label}
+                                                                </span>
+                                                            </div>
+                                                        </button>
+                                                    </DropdownMenuItem>
+                                                ))}
+                                            </div>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    {selectedTool && (
+                                        <motion.button
                                             type="button"
+                                            onClick={() => {
+                                                setSelectedTool(null);
+                                                if (selectedTool.id === 'translate') {
+                                                    setTranslateLanguages(null);
+                                                } else if (selectedTool.id === 'doc-generate') {
+                                                    setIsDocumentModalOpen(false);
+                                                }
+                                            }}
                                             disabled={disabled}
+                                            initial={{ scale: 0, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            exit={{ scale: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2, type: "spring", stiffness: 260, damping: 25 }}
                                             className={cn(
-                                                "rounded-full p-2 transition-colors",
-                                                selectedTool || showTools
-                                                    ? "bg-sky-500/15 text-sky-500"
-                                                    : "text-foreground/40 hover:text-foreground",
-                                                disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                                                "w-5 h-5 rounded-full bg-muted hover:bg-muted/70 transition-colors flex items-center justify-center shrink-0",
+                                                disabled && "cursor-not-allowed opacity-50"
                                             )}
                                         >
-                                            <motion.div
-                                                animate={{ rotate: showTools ? 180 : 0, scale: showTools || selectedTool ? 1.1 : 1 }}
-                                                transition={{ type: "spring", stiffness: 260, damping: 25 }}
-                                            >
-                                                {selectedTool ? selectedTool.icon : (
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("w-4 h-4", showTools ? "text-sky-500" : "text-inherit")}>
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                                        <path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5" />
-                                                    </svg>
-                                                )}
-                                            </motion.div>
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-48 p-2 backdrop-blur-sm border border-border/60 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-popover">
-                                        <div className="space-y-1">
-                                            {tools.map((tool) => (
-                                                <DropdownMenuItem key={tool.id} asChild>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            if (tool.id === 'translate') {
-                                                                setSelectedTool(tool);
-                                                                setIsTranslateModalOpen(true);
-                                                                setShowTools(false);
-                                                            } else {
-                                                                setSelectedTool(tool);
-                                                                setShowTools(false);
-                                                            }
-                                                        }}
-                                                        className="w-full flex items-center gap-3 p-3 hover:bg-accent rounded-xl transition-all duration-200 cursor-pointer group hover:shadow-sm border border-transparent hover:border-border/50"
-                                                    >
-                                                        <div className="flex items-center gap-2 flex-1">
-                                                            {tool.icon}
-                                                            <span className="text-sm font-medium text-foreground tracking-tight leading-tight whitespace-nowrap group-hover:text-foreground transition-colors">
-                                                                {tool.label}
-                                                            </span>
-                                                        </div>
-                                                    </button>
-                                                </DropdownMenuItem>
-                                            ))}
-                                        </div>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                {selectedTool && (
-                                    <motion.button
-                                        type="button"
-                                        onClick={() => {
-                                            setSelectedTool(null);
-                                            if (selectedTool.id === 'translate') {
-                                                setTranslateLanguages(null);
-                                            }
-                                        }}
-                                        disabled={disabled}
-                                        initial={{ scale: 0, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        exit={{ scale: 0, opacity: 0 }}
-                                        transition={{ duration: 0.2, type: "spring", stiffness: 260, damping: 25 }}
-                                        className={cn(
-                                            "w-5 h-5 rounded-full bg-muted hover:bg-muted/70 transition-colors flex items-center justify-center shrink-0",
-                                            disabled && "cursor-not-allowed opacity-50"
-                                        )}
-                                    >
-                                        <X className="w-3 h-3 text-muted-foreground" />
-                                    </motion.button>
-                                )}
+                                            <X className="w-3 h-3 text-muted-foreground" />
+                                        </motion.button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -412,11 +413,11 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                 id="ai-input"
                                 value={value}
                                 placeholder={
-                                    mode === 'agentic' 
-                                        ? "Ask Nyay Mitra Agent" 
+                                    mode === 'agentic'
+                                        ? "Ask Nyay Mitra Agent"
                                         : "Ask LegalAI"
                                 }
-                                className="w-full min-h-0 rounded-none sm:rounded-2xl sm:rounded-b-none px-4 py-4 bg-transparent dark:bg-transparent border-none text-foreground placeholder:text-foreground/50 resize-none focus-visible:ring-0 leading-[1.2]"
+                                className="w-full min-h-[52px] sm:min-h-[60px] rounded-none sm:rounded-[32px] sm:rounded-b-none px-5 py-5 bg-transparent dark:bg-transparent border-none text-foreground placeholder:text-foreground/50 resize-none focus-visible:ring-0 leading-relaxed text-base"
                                 ref={textareaRef}
                                 disabled={disabled}
                                 onFocus={handleFocus}
@@ -443,25 +444,25 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                 onClick={handleSubmit}
                                 disabled={(!value.trim() && uploadedFiles.length === 0) || disabled}
                                 className={cn(
-                                    "rounded-full p-2 transition-colors",
+                                    "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors",
                                     (value.trim() || uploadedFiles.length > 0) && !disabled
-                                        ? "bg-sky-500/15 text-sky-500 cursor-pointer hover:bg-sky-500/25"
-                                        : "text-foreground/40 cursor-not-allowed"
+                                        ? "bg-primary/80 text-primary-foreground cursor-pointer hover:bg-primary/90 dark:bg-primary/80"
+                                        : "bg-muted text-muted-foreground/80 cursor-not-allowed"
                                 )}
                             >
-                                <Send className="w-4 h-4" />
+                                <ArrowRight className="w-5 h-5" />
                             </button>
                         </div>
-                        {/* DESKTOP: action bar */}
                         <div className={cn(
                             "hidden sm:block h-12 bg-transparent transition-all duration-300",
-                            uploadedFiles.length > 0 ? "rounded-b-none" : "rounded-b-2xl"
+                            uploadedFiles.length > 0 ? "rounded-b-none" : "rounded-b-3xl"
                         )}>
                             <div className="absolute left-3 bottom-3 flex items-center gap-2">
                                 {mode === 'agentic' && (
-                                    <label 
+                                    <label
                                         className={cn(
-                                            "rounded-lg p-2 hover:bg-foreground/10 transition-colors relative",
+                                            "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors relative flex items-center justify-center",
+                                            "bg-muted text-muted-foreground/80 hover:bg-muted/80",
                                             disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                                         )}
                                         onClick={(e) => {
@@ -470,23 +471,23 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                             }
                                         }}
                                     >
-                                        <input 
-                                            type="file" 
-                                            className="hidden" 
+                                        <input
+                                            type="file"
+                                            className="hidden"
                                             ref={fileInputRef}
                                             onChange={handleFileUpload}
                                             disabled={disabled}
                                             accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif"
                                         />
-                                        <Paperclip className="w-4 h-4 text-foreground/40 hover:text-foreground transition-colors" />
+                                        <Paperclip className="w-5 h-5 text-inherit" />
                                         {uploadedFiles.length > 0 && (
-                                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-sky-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
                                                 {uploadedFiles.length}
                                             </span>
                                         )}
                                     </label>
                                 )}
-                                
+
                                 {/* Detected language indicator (Agentic mode only) */}
                                 {mode === 'agentic' && detectedLanguage && (
                                     <motion.div
@@ -500,20 +501,20 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                         <span>{detectedLanguage.display_name}</span>
                                     </motion.div>
                                 )}
-                                
+
                                 {/* Detecting indicator */}
                                 {mode === 'agentic' && isDetecting && !detectedLanguage && (
                                     <motion.div
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
-                                            className="flex items-center gap-1 px-2 py-1 bg-muted-foreground/10 text-muted-foreground rounded-full text-xs font-medium border border-muted-foreground/20"
+                                        className="flex items-center gap-1 px-2 py-1 bg-muted-foreground/10 text-muted-foreground rounded-full text-xs font-medium border border-muted-foreground/20"
                                     >
                                         <Languages className="w-3 h-3 animate-pulse" />
                                         <span>Detecting...</span>
                                     </motion.div>
                                 )}
-                                
+
                                 {/* Translation language indicator */}
                                 {translateLanguages && (
                                     <div className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full text-xs font-medium border border-blue-500/20">
@@ -533,23 +534,48 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                         </button>
                                     </div>
                                 )}
-                                
+
                                 {mode === 'chat' && (
                                     <div className="flex items-center gap-2">
+                                        {isLawyerModule && (
+                                            <label
+                                                className={cn(
+                                                    "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors relative flex items-center justify-center",
+                                                    "bg-muted text-muted-foreground/80 hover:bg-muted/80",
+                                                    disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                                                )}
+                                                onClick={(e) => { if (disabled) e.preventDefault(); }}
+                                            >
+                                                <input
+                                                    type="file"
+                                                    className="hidden"
+                                                    ref={fileInputRef}
+                                                    onChange={handleFileUpload}
+                                                    disabled={disabled}
+                                                    accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif"
+                                                />
+                                                <Paperclip className="w-5 h-5 text-inherit" />
+                                                {uploadedFiles.length > 0 && (
+                                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                                                        {uploadedFiles.length}
+                                                    </span>
+                                                )}
+                                            </label>
+                                        )}
                                         <DropdownMenu onOpenChange={setShowTools}>
                                             <DropdownMenuTrigger asChild disabled={disabled}>
                                                 <button
                                                     type="button"
                                                     disabled={disabled}
                                                     className={cn(
-                                                        "rounded-full transition-all flex items-center gap-2 px-1.5 py-1 border h-8",
+                                                        "rounded-[28px] sm:rounded-[32px] transition-all flex items-center gap-2 px-2 py-1.5 border h-10",
                                                         selectedTool || showTools
-                                                            ? "bg-sky-500/15 border-sky-400 text-sky-500"
-                                                        : "border-transparent text-foreground/40 hover:text-foreground",
+                                                            ? "bg-primary/80 border-primary/80 text-primary-foreground dark:bg-primary/80 dark:border-primary/80"
+                                                            : "border-transparent bg-muted text-muted-foreground/80 hover:bg-muted/80",
                                                         disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                                                     )}
                                                 >
-                                                    <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                                                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
                                                         <motion.div
                                                             animate={{
                                                                 rotate: showTools ? 180 : 0,
@@ -573,8 +599,8 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                                             {selectedTool ? selectedTool.icon : (
                                                                 <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
-                                                                    width="16"
-                                                                    height="16"
+                                                                    width="18"
+                                                                    height="18"
                                                                     viewBox="0 0 24 24"
                                                                     fill="none"
                                                                     stroke="currentColor"
@@ -582,13 +608,13 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                                                     strokeLinecap="round"
                                                                     strokeLinejoin="round"
                                                                     className={cn(
-                                                                        "w-4 h-4",
+                                                                        "w-5 h-5",
                                                                         showTools
-                                                                            ? "text-sky-500"
+                                                                            ? "text-primary-foreground"
                                                                             : "text-inherit"
                                                                     )}
                                                                 >
-                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                                     <path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5" />
                                                                 </svg>
                                                             )}
@@ -605,8 +631,8 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                                                 exit={{ width: 0, opacity: 0 }}
                                                                 transition={{ duration: 0.2 }}
                                                                 className={cn(
-                                                                    "text-sm overflow-hidden whitespace-nowrap shrink-0",
-                                                                    selectedTool || showTools ? "text-sky-500" : "text-inherit"
+                                                                    "text-sm font-medium overflow-hidden whitespace-nowrap shrink-0",
+                                                                    selectedTool || showTools ? "text-primary-foreground" : "text-inherit"
                                                                 )}
                                                             >
                                                                 {selectedTool ? selectedTool.label : "Tools"}
@@ -620,7 +646,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                                 align="start"
                                                 sideOffset={8}
                                                 className="w-48 p-2 backdrop-blur-sm border border-border/60 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-popover">
-                                            
+
                                                 <div className="space-y-1">
                                                     {tools.map((tool) => (
                                                         <DropdownMenuItem key={tool.id} asChild>
@@ -630,6 +656,10 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                                                     if (tool.id === 'translate') {
                                                                         setSelectedTool(tool);
                                                                         setIsTranslateModalOpen(true);
+                                                                        setShowTools(false);
+                                                                    } else if (tool.id === 'doc-generate') {
+                                                                        setSelectedTool(tool);
+                                                                        setIsDocumentModalOpen(true);
                                                                         setShowTools(false);
                                                                     } else {
                                                                         setSelectedTool(tool);
@@ -650,7 +680,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                                 </div>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
-                                        
+
                                         {selectedTool && (
                                             <motion.button
                                                 type="button"
@@ -658,6 +688,8 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                                     setSelectedTool(null);
                                                     if (selectedTool.id === 'translate') {
                                                         setTranslateLanguages(null);
+                                                    } else if (selectedTool.id === 'doc-generate') {
+                                                        setIsDocumentModalOpen(false);
                                                     }
                                                 }}
                                                 disabled={disabled}
@@ -666,7 +698,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                                 exit={{ scale: 0, opacity: 0 }}
                                                 transition={{ duration: 0.2, type: "spring", stiffness: 260, damping: 25 }}
                                                 className={cn(
-                                                    "w-6 h-6 rounded-2xl bg-muted hover:bg-muted/70 transition-colors flex items-center justify-center",
+                                                    "w-6 h-6 rounded-full bg-muted hover:bg-muted/70 transition-colors flex items-center justify-center",
                                                     disabled && "cursor-not-allowed opacity-50"
                                                 )}
                                             >
@@ -682,13 +714,13 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                     onClick={handleSubmit}
                                     disabled={(!value.trim() && uploadedFiles.length === 0) || disabled}
                                     className={cn(
-                                        "rounded-lg p-2 transition-colors",
+                                        "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors",
                                         (value.trim() || uploadedFiles.length > 0) && !disabled
-                                            ? "bg-sky-500/15 text-sky-500 cursor-pointer hover:bg-sky-500/25"
-                                            : "text-foreground/40 cursor-not-allowed"
+                                            ? "bg-primary/80 text-primary-foreground cursor-pointer hover:bg-primary/90 dark:bg-primary/80"
+                                            : "bg-muted text-muted-foreground/80 cursor-not-allowed"
                                     )}
                                 >
-                                    <Send className="w-4 h-4" />
+                                    <ArrowRight className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
@@ -707,7 +739,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                 <div className="bg-transparent backdrop-blur-sm rounded-b-2xl overflow-visible">
                                     {/* Separator line */}
                                     <div className="h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent mx-4"></div>
-                                    
+
                                     {/* Files container */}
                                     <div className="p-4 overflow-visible">
                                         <div className="flex flex-wrap gap-3">
@@ -717,12 +749,12 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                                     initial={{ opacity: 0, scale: 0.8, y: -10 }}
                                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                                     exit={{ opacity: 0, scale: 0.8, y: -10 }}
-                                                    transition={{ 
-                                                        duration: 0.2, 
-                                                        type: "spring", 
-                                                        stiffness: 300, 
+                                                    transition={{
+                                                        duration: 0.2,
+                                                        type: "spring",
+                                                        stiffness: 300,
                                                         damping: 25,
-                                                        delay: index * 0.05 
+                                                        delay: index * 0.05
                                                     }}
                                                     className="relative group"
                                                 >
@@ -735,11 +767,11 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                                                             <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-popover rotate-45"></div>
                                                         </div>
                                                     </div>
-                                                    
-                                                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-sky-500/10 to-sky-500/5 dark:from-sky-500/20 dark:to-sky-500/10 hover:from-sky-500/20 hover:to-sky-500/10 dark:hover:from-sky-500/30 dark:hover:to-sky-500/20 border border-sky-500/20 dark:border-sky-500/30 flex items-center justify-center text-sky-500 dark:text-sky-400 transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg hover:-translate-y-0.5 backdrop-blur-sm">
+
+                                                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 hover:from-primary/20 hover:to-primary/10 dark:hover:from-primary/30 dark:hover:to-primary/20 border border-primary/20 dark:border-primary/30 flex items-center justify-center text-primary dark:text-primary transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg hover:-translate-y-0.5 backdrop-blur-sm">
                                                         {getFileIcon(file.type)}
                                                     </div>
-                                                    
+
                                                     <button
                                                         onClick={() => removeFile(file.id)}
                                                         disabled={disabled}
@@ -785,7 +817,7 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                 {showModeIndicator && (
                     <div className="hidden sm:block mt-2 text-center">
                         <p className="text-xs text-foreground/50">
-                            {mode === 'agentic' 
+                            {mode === 'agentic'
                                 ? "Agentic mode: AI with Document Analysis • Upload documents (PDF, DOC, TXT • Max 10MB)"
                                 : "Chat mode: General conversation • With Added Tools"
                             }
@@ -798,6 +830,12 @@ export default function AI_Input({ onSendMessage, mode = 'chat', disabled = fals
                 open={isTranslateModalOpen}
                 onOpenChange={setIsTranslateModalOpen}
                 onLanguageSelect={handleLanguageSelect}
+            />
+
+            <DocumentGenerationModal
+                open={isDocumentModalOpen}
+                onOpenChange={setIsDocumentModalOpen}
+                onDocumentGenerated={onDocumentGenerationRequest}
             />
         </div>
     );

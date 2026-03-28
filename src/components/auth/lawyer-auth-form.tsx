@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Aurora from '@/components/ui/Aurora';
 import { Logo } from '@/components/ui/logo';
 import { Eye, EyeOff, Loader2, Check, ArrowLeft, Home } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth as firebaseAuth } from '@/lib/firebase';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -75,8 +75,6 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const { toast } = useToast();
-
   const debouncedPhone = useDebounce(phone, 500);
   const debouncedBarNumber = useDebounce(barNumber, 500);
   const [phoneVerified, setPhoneVerified] = useState(false);
@@ -101,7 +99,7 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
   }, [debouncedBarNumber, barCouncilState]);
 
   const toggleAuthMode = () => {
-    router.push(isLogin ? '/auth/lawyer/register' : '/auth/lawyer/login');
+    router.push(isLogin ? '/auth/lawyer?action=register' : '/auth/lawyer?action=login');
   };
 
 
@@ -125,17 +123,17 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
     e.preventDefault();
 
     if (!email || !password) {
-      toast({ title: "Validation Error", description: "Please fill in all required fields.", variant: "destructive" });
+      toast.error("Validation Error", { description: "Please fill in all required fields." });
       return;
     }
 
     if (!isLogin) {
       if (!name || !phone || !barCouncilState || practiceAreas.filter(a => a.trim()).length === 0 || !yearsOfExperience || !barNumber) {
-        toast({ title: "Validation Error", description: "Please fill in all required fields.", variant: "destructive" });
+        toast.error("Validation Error", { description: "Please fill in all required fields." });
         return;
       }
       if (!phoneVerified || !barNumberVerified) {
-        toast({ title: "Validation Error", description: "Please verify phone and bar number.", variant: "destructive" });
+        toast.error("Validation Error", { description: "Please verify phone and bar number." });
         return;
       }
     }
@@ -171,16 +169,12 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
         if (!response.ok) throw new Error(data.message || 'Registration failed');
 
         if (data.success) {
-          toast({ title: "Account Created!", description: "Please verify your email to continue." });
+          toast.success("Account Created!");
           setStep('EMAIL_VERIFY');
         }
       }
     } catch (error) {
-      toast({
-        title: "Authentication Failed",
-        description: error instanceof Error ? error.message : "An error occurred. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Authentication Failed", { description: error instanceof Error ? error.message : "An error occurred. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -198,15 +192,11 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Email verification failed');
 
-      toast({ title: "Email Verified!", description: "Proceeding to login verification..." });
+      toast.success("Email Verified!");
 
       await autoLoginAfterVerify();
     } catch (error) {
-      toast({
-        title: "Verification Failed",
-        description: error instanceof Error ? error.message : "An error occurred.",
-        variant: "destructive",
-      });
+      toast.error("Verification Failed", { description: error instanceof Error ? error.message : "An error occurred." });
     } finally {
       setIsLoading(false);
     }
@@ -228,8 +218,9 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
         localStorage.setItem('authToken', data.data.accessToken);
         localStorage.setItem('refreshToken', data.data.refreshToken);
         localStorage.setItem('user', JSON.stringify({
-        name: data.data.lawyer.name,
-        email: data.data.lawyer.email,
+          name: data.data.lawyer.name,
+          email: data.data.lawyer.email,
+          userType: 'lawyer',
         }));
 
         if (isNewGoogleUser && pendingProfileData) {
@@ -243,16 +234,12 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
           });
         }
 
-        toast({ title: 'Success!', description: 'Logged in successfully.' });
+        toast.success('Success!');
         setStep('SUCCESS');
-        setTimeout(() => router.push('/ai'), 1500);
+        setTimeout(() => router.push('/dashboard'), 1500);
       }
     } catch (error) {
-      toast({
-        title: "2FA Verification Failed",
-        description: error instanceof Error ? error.message : "An error occurred.",
-        variant: "destructive",
-      });
+      toast.error("2FA Verification Failed", { description: error instanceof Error ? error.message : "An error occurred." });
     } finally {
       setIsLoading(false);
     }
@@ -282,7 +269,6 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
           setStep('TWO_FA');
         } else {
           setIsNewGoogleUser(true);
-          // email/name come from Firebase result directly, not from backend response
           setEmail(result.user.email || '');
           setName(result.user.displayName || '');
           setStep('PROFILE_COMPLETE');
@@ -290,14 +276,9 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
       }
     } catch (error) {
       if (!(error instanceof Error && error.message.includes('popup-closed-by-user'))) {
-        toast({
-          title: 'Google Sign-In Failed',
-          description: error instanceof Error ? error.message : 'An error occurred.',
-          variant: 'destructive',
-        });
+        toast.error('Google Sign-In Failed', { description: error instanceof Error ? error.message : 'An error occurred.' });
       }
     } finally {
-      // Sign out of Firebase session regardless — we use our own JWT from here
       try { await firebaseAuth.signOut(); } catch (_) {}
       setIsGoogleLoading(false);
     }
@@ -308,11 +289,11 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
     e.preventDefault();
 
     if (!phone || !barCouncilState || practiceAreas.filter(a => a.trim()).length === 0 || !yearsOfExperience || !barNumber) {
-      toast({ title: "Validation Error", description: "Please fill in all required fields.", variant: "destructive" });
+      toast.error("Validation Error", { description: "Please fill in all required fields." });
       return;
     }
     if (!phoneVerified || !barNumberVerified) {
-      toast({ title: "Validation Error", description: "Please verify phone and bar number.", variant: "destructive" });
+      toast.error("Validation Error", { description: "Please verify phone and bar number." });
       return;
     }
 
@@ -343,7 +324,6 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
       case 'FORM':
         return {
           heading: isLogin ? 'Signing In as a Lawyer' : 'Signing Up as a Lawyer',
-          subtext: isLogin ? 'Welcome Back' : 'Register Yourself',
         };
       case 'EMAIL_VERIFY':
         return { heading: 'Verify Your Email', subtext: 'Check your inbox for the code' };

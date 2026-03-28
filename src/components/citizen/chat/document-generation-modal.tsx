@@ -1,0 +1,630 @@
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import {
+  FileText,
+  Sparkles,
+  Download,
+  AlertTriangle,
+  CheckCircle2,
+  Lock,
+} from "lucide-react";
+import { toast } from "sonner";
+import { apiService } from "@/lib/api.service";
+import type { TemplateField, TemplateSchema, GenerateDocumentResult } from "@/lib/api.service";
+import { useUser } from "@/context/user-context";
+
+
+const CITIZEN_ALLOWED_TEMPLATES = [
+  "legal_notice.j2",
+  "cheque_bounce_notice.j2",
+  "defamation_notice.j2",
+  "consumer_complaint_notice.j2",
+];
+
+const ALL_TEMPLATES = [
+
+  {
+    id: "legal_notice.j2",
+    name: "Legal Notice",
+    category: "Legal Notices",
+    description: "Formal notice for breach of contract or disputes",
+    icon: "📨",
+  },
+  {
+    id: "cheque_bounce_notice.j2",
+    name: "Cheque Bounce Notice",
+    category: "Legal Notices",
+    description: "Section 138 NI Act notice for dishonoured cheques",
+    icon: "💳",
+  },
+  {
+    id: "defamation_notice.j2",
+    name: "Defamation Notice",
+    category: "Legal Notices",
+    description: "Notice under Sections 499–500 IPC",
+    icon: "🗣️",
+  },
+  {
+    id: "consumer_complaint_notice.j2",
+    name: "Consumer Complaint Notice",
+    category: "Legal Notices",
+    description: "Pre-complaint notice under Consumer Protection Act 2019",
+    icon: "🛡️",
+  },
+ 
+  {
+    id: "affidavit.j2",
+    name: "Affidavit",
+    category: "Court Documents",
+    description: "Sworn statement of facts for court proceedings",
+    icon: "📜",
+  },
+  {
+    id: "vakalatnama.j2",
+    name: "Vakalatnama",
+    category: "Court Documents",
+    description: "Power of attorney for legal representation",
+    icon: "⚖️",
+  },
+  {
+    id: "written_statement.j2",
+    name: "Written Statement",
+    category: "Court Documents",
+    description: "Defendant's reply under Order VIII Rule 1 CPC",
+    icon: "📋",
+  },
+  {
+    id: "bail_application.j2",
+    name: "Bail Application",
+    category: "Court Documents",
+    description: "Application for anticipatory/regular bail",
+    icon: "🔓",
+  },
+  {
+    id: "writ_petition.j2",
+    name: "Writ Petition",
+    category: "Court Documents",
+    description: "Constitutional remedy under Article 32/226",
+    icon: "⚖️",
+  },
+
+  {
+    id: "settlement_deed.j2",
+    name: "Settlement Deed",
+    category: "Legal Agreements",
+    description: "Binding settlement for dispute resolution",
+    icon: "🤝",
+  },
+
+  {
+    id: "power_of_attorney.j2",
+    name: "Power of Attorney",
+    category: "Legal Agreements",
+    description: "Authorization to act for legal/financial matters",
+    icon: "📝",
+  },
+
+  {
+    id: "contract_agreement.j2",
+    name: "Contract Agreement",
+    category: "Legal Agreements",
+    description: "General contract between parties",
+    icon: "📑",
+  },
+
+  {
+    id: "loan_agreement.j2",
+    name: "Loan Agreement",
+    category: "Legal Agreements",
+    description: "Loan agreement with repayment terms",
+    icon: "💰",
+  },
+  
+  {
+    id: "rent_agreement.j2",
+    name: "Rental Agreement",
+    category: "Legal Agreements",
+    description: "Rental/lease agreement for property",
+    icon: "🏠",
+  },
+];
+
+const FORMAT_OPTIONS: { value: "pdf" | "docx" | "txt"; label: string; desc: string }[] = [
+  { value: "pdf", label: "PDF", desc: "Best for sharing & printing" },
+  { value: "docx", label: "Word (.docx)", desc: "Editable in Microsoft Word" },
+  { value: "txt", label: "Plain Text", desc: "Simple text file" },
+];
+
+
+
+interface DocumentGenerationModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDocumentGenerated?: (result: GenerateDocumentResult) => void;
+}
+
+
+
+function fieldLabel(field: TemplateField): string {
+  if (field.description && field.description.trim()) return field.description;
+  return field.name
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+
+function InputForField({
+  field,
+  value,
+  onChange,
+}: {
+  field: TemplateField;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const baseClass =
+    "border-border bg-muted text-foreground rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-ring";
+
+  if (field.field_type === "auto-generate") {
+    return (
+      <div className="flex items-center gap-2 h-9 px-3 rounded-xl border border-dashed border-blue-400/50 bg-blue-500/5 text-sm text-blue-400">
+        <Sparkles className="w-3.5 h-3.5 shrink-0" />
+        <span>Auto-generated by AI from case facts</span>
+      </div>
+    );
+  }
+
+  if (field.field_type === "textarea") {
+    return (
+      <Textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={field.placeholder || `Enter ${fieldLabel(field).toLowerCase()}`}
+        className={`${baseClass} resize-none`}
+        rows={3}
+      />
+    );
+  }
+
+  if (field.field_type === "date") {
+    return (
+      <Input
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={baseClass}
+      />
+    );
+  }
+
+  if (field.field_type === "number") {
+    return (
+      <Input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={field.placeholder || "0"}
+        className={baseClass}
+      />
+    );
+  }
+
+  if (field.field_type === "email") {
+    return (
+      <Input
+        type="email"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={field.placeholder || "email@example.com"}
+        className={baseClass}
+      />
+    );
+  }
+
+  return (
+    <Input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={field.placeholder || `Enter ${fieldLabel(field).toLowerCase()}`}
+      className={baseClass}
+    />
+  );
+}
+
+
+export function DocumentGenerationModal({
+  open,
+  onOpenChange,
+  onDocumentGenerated,
+}: DocumentGenerationModalProps) {
+  const { user, isCitizen, isLawyer, isLoading } = useUser();
+  const allowedTemplates = isCitizen
+    ? ALL_TEMPLATES.filter((t) => CITIZEN_ALLOWED_TEMPLATES.includes(t.id))
+    : ALL_TEMPLATES;
+
+  const [step, setStep] = useState<"pick" | "fill" | "generating" | "done">("pick");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [format, setFormat] = useState<"pdf" | "docx" | "txt">("pdf");
+  const [schema, setSchema] = useState<TemplateSchema | null>(null);
+  const [schemaLoading, setSchemaLoading] = useState(false);
+  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [generationResult, setGenerationResult] = useState<GenerateDocumentResult | null>(null);
+
+  const categories = [...new Set(allowedTemplates.map((t) => t.category))];
+
+  useEffect(() => {
+    if (!selectedTemplateId || !open) return;
+    setSchemaLoading(true);
+    setSchema(null);
+    setFormData({});
+
+    apiService
+      .getTemplateSchema(selectedTemplateId)
+      .then((s) => {
+        setSchema(s);
+        const init: Record<string, string> = {};
+        s.all_fields.forEach((f) => {
+          if (f.field_type !== "auto-generate") init[f.name] = "";
+        });
+        setFormData(init);
+      })
+      .catch(() => {
+        toast.error("Failed to load template", { description: "Could not fetch field details for this template." });
+      })
+      .finally(() => setSchemaLoading(false));
+  }, [selectedTemplateId, open]);
+
+  const handleGenerate = useCallback(async () => {
+    if (!selectedTemplateId || !schema) return;
+
+    const missing = schema.critical_fields.filter(
+      (name) => !formData[name]?.trim()
+    );
+
+    if (missing.length > 0) {
+      const labels = missing
+        .map((name) => {
+          const f = schema.all_fields.find((x) => x.name === name);
+          return f ? fieldLabel(f) : name;
+        })
+        .join(", ");
+      toast.error("Required fields missing", { description: `Please fill in: ${labels}` });
+      return;
+    }
+
+    setStep("generating");
+    try {
+      const result = await apiService.generateDocument(
+        selectedTemplateId,
+        formData,
+        format
+      );
+
+      setGenerationResult(result);
+      setStep("done");
+      onDocumentGenerated?.(result);
+
+      if (result.generationStatus === "incomplete") {
+        toast("Document generated (incomplete)", { description: result.warning ??
+            "Some optional fields were filled with placeholders. Review before use." });
+      } else {
+        toast("Document ready", { description: "Your document has been generated successfully." });
+      }
+    } catch (error: any) {
+      setStep("fill");
+      toast.error("Generation failed", { description: error?.message ?? "An unexpected error occurred. Please try again." });
+    }
+  }, [selectedTemplateId, schema, formData, format, onDocumentGenerated, toast]);
+
+  const resetForm = () => {
+    setStep("pick");
+    setSelectedTemplateId("");
+    setSchema(null);
+    setFormData({});
+    setGenerationResult(null);
+    setFormat("pdf");
+  };
+
+  const handleClose = () => {
+    onOpenChange(false);
+    resetForm();
+  };
+
+  const selectedTemplateMeta = ALL_TEMPLATES.find((t) => t.id === selectedTemplateId);
+
+  if (!isLoading && !isCitizen && !isLawyer) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-destructive" />
+              Access Restricted
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Document generation is available for citizen and lawyer accounts only.
+            Firm accounts manage documents through their firm dashboard.
+          </p>
+          <Button onClick={() => onOpenChange(false)}>Close</Button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="w-[calc(100%-2rem)] sm:w-auto sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 border border-border/60 rounded-2xl bg-popover">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-foreground">
+            <FileText className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+            Generate Legal Document
+            {isCitizen && (
+              <Badge variant="secondary" className="ml-2 text-xs font-normal">
+                Citizen – notices only
+              </Badge>
+            )}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="grid gap-6 py-2">
+
+          {/* ── Step 1: Template + Format picker  */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            {/* Template selector */}
+            <div className="space-y-2">
+              <Label className="text-sm text-foreground">Document Template</Label>
+              <Select
+                value={selectedTemplateId}
+                onValueChange={(v) => {
+                  setSelectedTemplateId(v);
+                  setStep("fill");
+                }}
+                disabled={step === "generating"}
+              >
+                <SelectTrigger className="border-border bg-muted text-foreground rounded-xl text-sm h-9">
+                  <SelectValue placeholder="Choose a template…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <React.Fragment key={cat}>
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {cat}
+                      </div>
+                      {allowedTemplates
+                        .filter((t) => t.category === cat)
+                        .map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            <span className="flex items-center gap-2">
+                              <span>{t.icon}</span>
+                              <span className="font-medium">{t.name}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                    </React.Fragment>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedTemplateMeta && (
+                <p className="text-xs text-muted-foreground pl-1">
+                  {selectedTemplateMeta.description}
+                </p>
+              )}
+            </div>
+
+            {/* Format selector */}
+            <div className="space-y-2">
+              <Label className="text-sm text-foreground">Output Format</Label>
+              <Select
+                value={format}
+                onValueChange={(v) => setFormat(v as typeof format)}
+                disabled={step === "generating"}
+              >
+                <SelectTrigger className="border-border bg-muted text-foreground rounded-xl text-sm h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FORMAT_OPTIONS.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>
+                      <span className="font-medium">{f.label}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        {f.desc}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/*  Schema loading skeleton */}
+          {schemaLoading && (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="space-y-1.5">
+                  <div className="h-3 w-24 bg-muted animate-pulse rounded" />
+                  <div className="h-9 bg-muted animate-pulse rounded-xl" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Step 2: Dynamic form */}
+          {schema && !schemaLoading && step !== "generating" && step !== "done" && (
+            <div className="space-y-4">
+              {/* Critical fields first, then optional */}
+              {[
+                schema.all_fields.filter((f) => f.required),
+                schema.all_fields.filter((f) => !f.required),
+              ].map((group, gi) => {
+                if (group.length === 0) return null;
+                return (
+                  <div key={gi} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {gi === 0 ? "Required fields" : "Optional fields"}
+                      </span>
+                      <div className="flex-1 h-px bg-border/60" />
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {group.map((field) => (
+                        <div
+                          key={field.name}
+                          className={
+                            field.field_type === "textarea" ||
+                            field.field_type === "auto-generate"
+                              ? "sm:col-span-2"
+                              : ""
+                          }
+                        >
+                          <div className="space-y-1.5">
+                            <Label
+                              htmlFor={field.name}
+                              className="text-xs text-foreground flex items-center gap-1"
+                            >
+                              {fieldLabel(field)}
+                              {field.required && (
+                                <span className="text-red-500 text-sm leading-none">*</span>
+                              )}
+                            </Label>
+                            <InputForField
+                              field={field}
+                              value={formData[field.name] ?? ""}
+                              onChange={(v) =>
+                                setFormData((prev) => ({ ...prev, [field.name]: v }))
+                              }
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Generating animation */}
+          {step === "generating" && (
+            <div className="flex flex-col items-center justify-center py-10 space-y-5">
+              <div className="relative">
+                <Sparkles className="w-10 h-10 text-yellow-500 animate-spin" style={{ animationDuration: "3s" }} />
+                <div className="absolute inset-0 animate-ping opacity-40">
+                  <Sparkles className="w-10 h-10 text-yellow-400" />
+                </div>
+              </div>
+              <div className="w-full max-w-xs space-y-2">
+                {[1, 0.75, 0.5, 0.85, 0.6].map((w, i) => (
+                  <div
+                    key={i}
+                    className="h-3 bg-muted animate-pulse rounded"
+                    style={{ width: `${w * 100}%`, animationDelay: `${i * 0.15}s` }}
+                  />
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Generating your {selectedTemplateMeta?.name ?? "document"}…
+              </p>
+            </div>
+          )}
+
+          {/* Download card */}
+          {step === "done" && generationResult && (
+            <div className="rounded-xl border border-border/60 bg-muted/40 p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                {generationResult.generationStatus === "complete" ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+                )}
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium text-foreground">
+                    {generationResult.generationStatus === "complete"
+                      ? "Document ready"
+                      : "Document generated (incomplete)"}
+                  </p>
+                  {generationResult.generationStatus === "incomplete" && (
+                    <p className="text-xs text-muted-foreground">
+                      {generationResult.warning ??
+                        "Some optional fields used placeholders. Review before submission."}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {generationResult.completionPercentage}% complete ·{" "}
+                    {generationResult.filename}
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() =>
+                  apiService.downloadBlob(
+                    generationResult.blob,
+                    generationResult.filename
+                  )
+                }
+                className="w-full rounded-xl"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download {format.toUpperCase()}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={resetForm}
+                className="w-full rounded-xl text-sm text-muted-foreground"
+              >
+                Generate another document
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        {step !== "done" && (
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 pt-4 border-t border-border/50">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={step === "generating"}
+              className="w-full sm:w-auto rounded-xl border-border bg-transparent text-foreground hover:bg-accent"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={
+                step === "pick"
+                  ? () =>
+                      toast.error("No template selected", { description: "Please choose a document template first." })
+                  : handleGenerate
+              }
+              disabled={!selectedTemplateId || step === "generating" || schemaLoading}
+              className="w-full sm:w-auto rounded-xl"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              {step === "generating" ? "Generating…" : "Generate Document"}
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Aurora from '@/components/ui/Aurora';
 import { Logo } from '@/components/ui/logo';
 import { Eye, EyeOff, Loader2, Check, ArrowLeft, Home, AlertTriangle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { useDebounce } from '@/hooks/use-debounce';
 import { InputOTPForm } from '@/components/ui/otp-page';
 
@@ -88,8 +88,6 @@ export default function FirmAuthForm({ mode }: FirmAuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
   const debouncedPhone = useDebounce(phone, 500);
   const debouncedRegNumber = useDebounce(registrationNumber, 500);
   const debouncedGst = useDebounce(gstNumber, 500);
@@ -118,7 +116,7 @@ export default function FirmAuthForm({ mode }: FirmAuthFormProps) {
   }, [debouncedGst]);
 
   const toggleAuthMode = () => {
-    router.push(isLogin ? '/auth/firm/register' : '/auth/firm/login');
+    router.push(isLogin ? '/auth/firm?action=register' : '/auth/firm?action=login');
   };
 
   const autoLoginAfterVerify = async () => {
@@ -140,33 +138,33 @@ export default function FirmAuthForm({ mode }: FirmAuthFormProps) {
     e.preventDefault();
 
     if (!email || !password) {
-      toast({ title: 'Validation Error', description: 'Please fill in all required fields.', variant: 'destructive' });
+      toast.error('Validation Error', { description: 'Please fill in all required fields.' });
       return;
     }
 
     if (!isLogin) {
       if (!name || !firmName || !phone || !registrationNumber || !city || !state) {
-        toast({ title: 'Validation Error', description: 'Please fill in all required fields.', variant: 'destructive' });
+        toast.error('Validation Error', { description: 'Please fill in all required fields.' });
         return;
       }
       if (!phoneValid) {
-        toast({ title: 'Validation Error', description: 'Enter a valid 10-digit Indian phone number.', variant: 'destructive' });
+        toast.error('Validation Error', { description: 'Enter a valid 10-digit Indian phone number.' });
         return;
       }
       if (!regNumberValid) {
-        toast({ title: 'Validation Error', description: 'Enter a valid MCA21 company registration number. e.g. U74999MH2010PTC123456', variant: 'destructive' });
+        toast.error('Validation Error', { description: 'Enter a valid MCA21 company registration number. e.g. U74999MH2010PTC123456' });
         return;
       }
       if (gstNumber && !gstValid) {
-        toast({ title: 'Validation Error', description: 'Enter a valid 15-character GST number.', variant: 'destructive' });
+        toast.error('Validation Error', { description: 'Enter a valid 15-character GST number.' });
         return;
       }
       if (password.length < 12) {
-        toast({ title: 'Validation Error', description: 'Password must be at least 12 characters.', variant: 'destructive' });
+        toast.error('Validation Error', { description: 'Password must be at least 12 characters.' });
         return;
       }
       if (password !== confirmPassword) {
-        toast({ title: 'Validation Error', description: 'Passwords do not match.', variant: 'destructive' });
+        toast.error('Validation Error', { description: 'Passwords do not match.' });
         return;
       }
     }
@@ -205,16 +203,12 @@ export default function FirmAuthForm({ mode }: FirmAuthFormProps) {
 
         if (data.success && data.data) {
           setFirmId(data.data.firm.id);
-          toast({ title: 'Firm Account Created!', description: 'Please verify your email to continue.' });
+          toast.success('Firm Account Created!');
           setStep('EMAIL_VERIFY');
         }
       }
     } catch (error) {
-      toast({
-        title: 'Authentication Failed',
-        description: error instanceof Error ? error.message : 'An error occurred. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Authentication Failed', { description: error instanceof Error ? error.message : 'An error occurred. Please try again.' });
     } finally {
       setIsLoading(false);
     }
@@ -231,14 +225,10 @@ export default function FirmAuthForm({ mode }: FirmAuthFormProps) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Email verification failed');
 
-      toast({ title: 'Email Verified!', description: 'Proceeding to login verification...' });
+      toast.success('Email Verified!');
       await autoLoginAfterVerify();
     } catch (error) {
-      toast({
-        title: 'Verification Failed',
-        description: error instanceof Error ? error.message : 'An error occurred.',
-        variant: 'destructive',
-      });
+      toast.error('Verification Failed', { description: error instanceof Error ? error.message : 'An error occurred.' });
     } finally {
       setIsLoading(false);
     }
@@ -266,16 +256,12 @@ export default function FirmAuthForm({ mode }: FirmAuthFormProps) {
           userType: 'FIRM_ADMIN',
         }));
 
-        toast({ title: 'Welcome!', description: `Logged in as ${data.data.firm.firmName}` });
+        toast.success('Welcome!');
         setStep('SUCCESS');
         setTimeout(() => router.push('/firm/dashboard'), 1500);
       }
     } catch (error) {
-      toast({
-        title: '2FA Verification Failed',
-        description: error instanceof Error ? error.message : 'An error occurred.',
-        variant: 'destructive',
-      });
+      toast.error('2FA Verification Failed', { description: error instanceof Error ? error.message : 'An error occurred.' });
     } finally {
       setIsLoading(false);
     }

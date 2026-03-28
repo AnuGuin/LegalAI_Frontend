@@ -8,7 +8,8 @@ import {
 // @ts-ignore
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
+import { UserProvider } from "@/context/user-context";
+import { Toaster } from "@/components/ui/sonner";
 import { HeroUIProvider } from "@heroui/system";
 
 const montserrat = Montserrat({
@@ -60,8 +61,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
-            <Toaster />
+            <UserProvider>
+              {children}
+              <Toaster />
+            </UserProvider>
           </ThemeProvider>
         </HeroUIProvider>
       </body>

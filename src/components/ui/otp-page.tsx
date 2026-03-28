@@ -14,7 +14,6 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
-import { RefreshCwIcon } from "lucide-react"
 import { useState } from "react"
 
 interface InputOTPFormProps {
@@ -45,25 +44,25 @@ export function InputOTPForm({ title, description, onSubmit }: InputOTPFormProps
         <form onSubmit={handleSubmit}>
           <Field className="items-center">
             <div className="flex justify-center">
-            <InputOTP
-              maxLength={6}
-              id="otp-verification"
-              required
-              value={otp}
-              onChange={setOtp}
-            >
-              <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-11 *:data-[slot=input-otp-slot]:text-xl">
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-              </InputOTPGroup>
-              <InputOTPSeparator className="mx-2" />
-              <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-11 *:data-[slot=input-otp-slot]:text-xl">
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
-              </InputOTPGroup>
-            </InputOTP>
+              <InputOTP
+                maxLength={6}
+                id="otp-verification"
+                required
+                value={otp}
+                onChange={setOtp}
+              >
+                <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-11 *:data-[slot=input-otp-slot]:text-xl">
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                </InputOTPGroup>
+                <InputOTPSeparator className="mx-2" />
+                <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-11 *:data-[slot=input-otp-slot]:text-xl">
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
             </div>
           </Field>
           <CardFooter className="px-0 py-4">

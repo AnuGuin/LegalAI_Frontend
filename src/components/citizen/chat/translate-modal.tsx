@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Languages } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface TranslateModalProps {
   open: boolean;
@@ -31,24 +31,14 @@ const SUPPORTED_LANGUAGES = [
 export function TranslateModal({ open, onOpenChange, onLanguageSelect }: TranslateModalProps) {
   const [sourceLang, setSourceLang] = useState<string>("");
   const [targetLang, setTargetLang] = useState<string>("");
-  const { toast } = useToast();
-
   const handleConfirm = () => {
     if (!sourceLang || !targetLang) {
-      toast({
-        variant: "destructive",
-        title: "Missing Selection",
-        description: "Please select both input and output languages.",
-      });
+      toast.error("Missing Selection", { description: "Please select both input and output languages." });
       return;
     }
 
     if (sourceLang === targetLang) {
-      toast({
-        variant: "destructive",
-        title: "Invalid Selection",
-        description: "Input and output languages cannot be the same.",
-      });
+      toast.error("Invalid Selection", { description: "Input and output languages cannot be the same." });
       return;
     }
 
@@ -67,11 +57,7 @@ export function TranslateModal({ open, onOpenChange, onLanguageSelect }: Transla
       setSourceLang("");
       setTargetLang("");
       
-      toast({
-        variant: "default",
-        title: "Languages Selected",
-        description: `Ready to translate from ${sourceLangObj.name} to ${targetLangObj.name}.`,
-      });
+      toast("Languages Selected", { description: `Ready to translate from ${sourceLangObj.name} to ${targetLangObj.name}.` });
     }
   };
 

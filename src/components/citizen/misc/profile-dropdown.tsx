@@ -19,7 +19,7 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
-import TocDialog from "../docs/terms/toc-dialog";
+import TocDialog from "../../docs/terms/toc-dialog";
 import SettingsModal from "./settings-modal";
 
 interface Profile {
