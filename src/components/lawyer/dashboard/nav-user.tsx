@@ -1,5 +1,7 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+import { useUser } from "@/context/user-context"
 import {
   BadgeCheck,
   Bell,
@@ -49,7 +51,14 @@ export function NavUser({
     avatar: string
   }
 }) {
+  const router = useRouter()
+  const { logout } = useUser()
   const { isMobile, state } = useSidebar()
+
+  const handleLogout = () => {
+    logout()
+    router.push("/")
+  }
   const isCollapsed = state === "collapsed"
 
   return (
@@ -126,7 +135,10 @@ export function NavUser({
 
             <DropdownMenuSeparator />
             <div className="py-1">
-              <DropdownMenuItem className="flex items-center p-2 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent hover:bg-destructive/10 hover:border-destructive/30 hover:shadow-sm focus:bg-destructive/10 focus:text-destructive w-full text-destructive">
+              <DropdownMenuItem 
+                onClick={handleLogout}
+                className="flex items-center p-2 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent hover:bg-destructive/10 hover:border-destructive/30 hover:shadow-sm focus:bg-destructive/10 focus:text-destructive w-full text-destructive"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span className="text-sm font-medium tracking-tight leading-tight">Log out</span>
               </DropdownMenuItem>

@@ -40,6 +40,8 @@ interface AI_InputProps {
     showModeIndicator?: boolean;
     wrapperClassName?: string;
     inputMinHeight?: number;
+    triggerDocModal?: boolean;
+    onTriggerDocModal?: () => void;
 }
 
 const tools: Tool[] = [
@@ -87,7 +89,7 @@ const ALLOWED_FILE_TYPES = [
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, mode = 'chat', disabled = false, showModeIndicator = true, wrapperClassName, inputMinHeight = 52 }: AI_InputProps) {
+export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, mode = 'chat', disabled = false, showModeIndicator = true, wrapperClassName, inputMinHeight = 52, triggerDocModal, onTriggerDocModal }: AI_InputProps) {
     const pathname = usePathname();
     const isLawyerModule = pathname?.startsWith('/dashboard') || pathname?.startsWith('/assistant');
     const [value, setValue] = useState("");
@@ -144,13 +146,17 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
         };
     }, [value, mode]);
 
+    useEffect(() => {
+        if (triggerDocModal === true) {
+            setSelectedTool(tools.find(t => t.id === 'doc-generate') || null);
+            setIsDocumentModalOpen(true);
+            onTriggerDocModal?.();
+        }
+    }, [triggerDocModal, onTriggerDocModal]);
+
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files) return;
-        if (mode !== 'agentic') {
-            toast.error("File upload not available", { description: "Please switch to Agentic mode to upload files." });
-            return;
-        }
 
         const validFiles: UploadedFile[] = [];
         const errors: string[] = [];
@@ -209,11 +215,6 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
 
     const handleSubmit = async () => {
         if (!value.trim() && uploadedFiles.length === 0) return;
-
-        if (uploadedFiles.length > 0 && mode !== 'agentic') {
-            toast.error("File upload error", { description: "Files can only be sent in Agentic mode." });
-            return;
-        }
 
         if (disabled) return;
         let messageContent = value.trim();
@@ -321,6 +322,23 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                             )}
                             {mode === 'chat' && (
                                 <div className="flex items-center gap-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => !disabled && fileInputRef.current?.click()}
+                                        disabled={disabled}
+                                        className={cn(
+                                            "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors relative flex items-center justify-center",
+                                            "bg-muted text-muted-foreground/80 hover:bg-muted/80",
+                                            disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                                        )}
+                                    >
+                                        <Paperclip className="w-5 h-5 text-inherit" />
+                                        {uploadedFiles.length > 0 && (
+                                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                                                {uploadedFiles.length}
+                                            </span>
+                                        )}
+                                    </button>
                                     <DropdownMenu onOpenChange={setShowTools}>
                                         <DropdownMenuTrigger asChild disabled={disabled}>
                                             <button
@@ -836,6 +854,17 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                 open={isDocumentModalOpen}
                 onOpenChange={setIsDocumentModalOpen}
                 onDocumentGenerated={onDocumentGenerationRequest}
+            />
+
+            {/* Hidden file input for both mobile and desktop */}
+            <input
+                type="file"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                disabled={disabled}
+                accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif"
+                multiple
             />
         </div>
     );

@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { usePathname } from "next/navigation"
-import { Search } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { Search, Trash2 } from "lucide-react"
 
 import {
   Breadcrumb,
@@ -13,6 +13,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
+import { DeleteConversationDialog } from "@/components/citizen/chat/delete-conversation-dialog"
 
 import { apiService } from "@/lib/api.service"
 
@@ -22,13 +25,14 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
   if (segments.length === 0) {
     return (
       <BreadcrumbItem>
-        <BreadcrumbPage className="text-xs font-medium">Home</BreadcrumbPage>
+        <BreadcrumbPage className="text-base font-medium">Home</BreadcrumbPage>
       </BreadcrumbItem>
     )
   }
 
-  // Custom logic for Assistant > [id]
-  const isAssistantMatter = segments.includes('assistant') && segments.length > segments.indexOf('assistant') + 1;
+
+  const isAssistantMatter = segments.includes('assistant') && segments.includes('matter') && segments.length > segments.indexOf('matter') + 1;
+  const isAssistantChat = segments.includes('assistant') && segments.includes('chat') && segments.length > segments.indexOf('chat') + 1;
   const assistantIndex = segments.indexOf('assistant');
 
   if (isAssistantMatter) {
@@ -41,7 +45,7 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
         return (
           <React.Fragment key={href}>
             <BreadcrumbItem>
-              <BreadcrumbLink href={href} className="text-xs">
+              <BreadcrumbLink href={href} className="text-base">
                 {label}
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -51,7 +55,7 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
       }),
       <React.Fragment key="matters">
         <BreadcrumbItem>
-          <BreadcrumbLink href="/dashboard" className="text-xs">
+          <BreadcrumbLink href="/matters" className="text-base">
             Matters
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -59,8 +63,44 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
       </React.Fragment>,
       <React.Fragment key="case-name">
         <BreadcrumbItem>
-          <BreadcrumbPage className="text-xs font-medium">
+          <BreadcrumbPage className="text-base font-medium">
             {matterName || "Loading..."}
+          </BreadcrumbPage>
+        </BreadcrumbItem>
+      </React.Fragment>
+    ]
+  }
+
+  if (isAssistantChat) {
+    const newSegments = segments.slice(0, assistantIndex + 1);
+    
+    return [
+      ...newSegments.map((segment, index) => {
+        const href = `/${newSegments.slice(0, index + 1).join('/')}`
+        const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ')
+        return (
+          <React.Fragment key={href}>
+            <BreadcrumbItem>
+              <BreadcrumbLink href={href} className="text-base">
+                {label}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="scale-75" />
+          </React.Fragment>
+        )
+      }),
+      <React.Fragment key="chat">
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/assistant/chat/new" className="text-base">
+            Chat
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator className="scale-75" />
+      </React.Fragment>,
+      <React.Fragment key="chat-name">
+        <BreadcrumbItem>
+          <BreadcrumbPage className="text-base font-medium">
+            {matterName || "New Conversation"}
           </BreadcrumbPage>
         </BreadcrumbItem>
       </React.Fragment>
@@ -76,9 +116,9 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
       <React.Fragment key={href}>
         <BreadcrumbItem>
           {isLast ? (
-            <BreadcrumbPage className="text-xs font-medium">{label}</BreadcrumbPage>
+            <BreadcrumbPage className="text-base font-medium">{label}</BreadcrumbPage>
           ) : (
-            <BreadcrumbLink href={href} className="text-xs">
+            <BreadcrumbLink href={href} className="text-base">
               {label}
             </BreadcrumbLink>
           )}
@@ -91,8 +131,29 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
 
 export function DashboardHeader({ onCreateMatter }: { onCreateMatter?: () => void }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [matterName, setMatterName] = React.useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = React.useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
+
+  const chatMatch = pathname.match(/\/assistant\/chat\/([^/]+)$/)
+  const isChat = chatMatch && chatMatch[1] && chatMatch[1] !== 'new'
+  const chatId = isChat ? chatMatch[1] : null
+
+  const handleDeleteChat = async () => {
+    if (!chatId) return
+    setIsDeleting(true)
+    try {
+      await apiService.deleteLawyerConversation(chatId)
+      toast.success("Conversation deleted.")
+      router.push("/assistant/chat/new")
+    } catch(err) {
+      toast.error("Failed to delete conversation.")
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -103,16 +164,19 @@ export function DashboardHeader({ onCreateMatter }: { onCreateMatter?: () => voi
   }, [])
 
   React.useEffect(() => {
-    const match = pathname.match(/assistant\/([^/]+)$/)
-    if (match && match[1]) {
-      apiService.getMatter(match[1]).then(m => setMatterName(m.title)).catch(() => {})
+    const matterMatch = pathname.match(/\/assistant\/matter\/([^/]+)$/)
+
+    if (matterMatch && matterMatch[1]) {
+      apiService.getMatter(matterMatch[1]).then(m => setMatterName(m.title)).catch(() => {})
+    } else if (isChat && chatId) {
+      apiService.getLawyerConversation(chatId).then(c => setMatterName(c.title || "Conversation")).catch(() => setMatterName("Conversation"))
     } else {
       setMatterName(null)
     }
-  }, [pathname])
+  }, [pathname, isChat, chatId])
 
   return (
-    <header className={`sticky top-0 z-50 flex h-12 shrink-0 items-center gap-2 bg-background backdrop-blur px-4 transition-all ${isScrolled ? "border-b border-border/60" : ""}`}>
+    <header className={`sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 bg-background backdrop-blur px-4 transition-all ${isScrolled ? "border-b border-border/60" : ""}`}>
       <Breadcrumb>
         <BreadcrumbList>
           {generateBreadcrumbs(pathname, matterName)}
@@ -120,14 +184,19 @@ export function DashboardHeader({ onCreateMatter }: { onCreateMatter?: () => voi
       </Breadcrumb>
 
       <div className="ml-auto flex items-center gap-2">
-        <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground w-52 cursor-text hover:border-border transition-colors">
-          <Search className="h-3 w-3 shrink-0" />
-          <span>Search matters…</span>
-          <kbd className="ml-auto text-[10px] bg-background border border-border rounded px-1 py-px">⌘K</kbd>
-        </div>
-
+        {isChat && (
+          <Button variant="ghost" size="icon" disabled={isDeleting} onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
         <ThemeToggle />
       </div>
+      
+      <DeleteConversationDialog 
+        open={isDeleteDialogOpen} 
+        onOpenChange={setIsDeleteDialogOpen} 
+        onConfirm={handleDeleteChat} 
+      />
     </header>
   )
 }

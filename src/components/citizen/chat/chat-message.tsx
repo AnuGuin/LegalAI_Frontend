@@ -378,7 +378,7 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
           }`}
         >
           {hasMessages ? (
-            <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-3 sm:space-y-4">
+            <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-8 pb-36 space-y-3 sm:space-y-4">
               {combinedMessages.map((msg) => (
                 <ChatMessage
                   key={msg.uiKey || msg.id}
@@ -392,7 +392,7 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
 
               {isLoading && !streamingMessageId && <LoadingMessage />}
 
-              <div ref={messagesEndRef} />
+<div ref={messagesEndRef} className="h-24" />
             </div>
           ) : (
             <WelcomeScreen
@@ -403,30 +403,37 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
           )}
         </div>
 
-        <div className={cn("pt-1 pb-3 sm:pb-4", !hasMessages && "sm:hidden")}>
-            <div className="max-w-6xl mx-auto px-2 sm:px-4">
-              <AI_Input onSendMessage={onSendMessage} mode={selectedMode} showModeIndicator={false} onDocumentGenerationRequest={onDocumentGenerationRequest} />
-            </div>
+        {hasMessages && (
+          <div className="absolute bottom-0 left-0 w-full pt-16 pb-6 px-4 z-10 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+              <div className="max-w-3xl mx-auto flex flex-col items-center pointer-events-auto">
+                <AI_Input 
+                  onSendMessage={onSendMessage} 
+                  mode={selectedMode} 
+                  showModeIndicator={false} 
+                  onDocumentGenerationRequest={onDocumentGenerationRequest} 
+                  wrapperClassName="w-full shadow-lg rounded-[32px] bg-background border border-border/50"
+                />
+                <div className="flex items-center justify-center font-light text-[10px] gap-1 mt-3 text-muted-foreground">
+                  <p>Legal AI can make mistakes. Please verify important information.</p>
+                  <a
+                    href="#cookies"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsCookieOpen(true);
+                    }}
+                    className="hover:text-primary transition-colors underline underline-offset-2 ml-1 cursor-pointer"
+                  >
+                    Cookies
+                  </a>
+                </div>
+              </div>
 
-            <div className="flex items-center justify-center font-light text-xs gap-1 mt-2 text-muted-foreground">
-              <p>LegalAI can make mistakes. Refer to</p>
-              <a
-                href="#cookies"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsCookieOpen(true);
-                }}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Cookie Policies
-              </a>
-            </div>
-
-            <CookiePolicyDialog
-              open={isCookieOpen}
-              onOpenChange={setIsCookieOpen}
-            />
-        </div>
+              <CookiePolicyDialog
+                open={isCookieOpen}
+                onOpenChange={setIsCookieOpen}
+              />
+          </div>
+        )}
 
         {showScrollButton && (
           <button

@@ -132,8 +132,10 @@ interface Matter {
   caseNumber?: string;
   priority: 'low' | 'medium' | 'high';
   description?: string;
+  notes?: string;
   parties: MatterParty[];
   status?: string;
+  stage?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -168,6 +170,8 @@ export interface MatterDocument {
   uploadedAt: string;
   uploadedBy?: string;
   url?: string;
+  originalName?: string;
+  title?: string;
 }
 
 export interface MatterDeadline {
@@ -181,16 +185,17 @@ export interface MatterDeadline {
   dueDate: string;
 }
 
-export interface WorkspaceMemorySection {
-  category: string;
-  icon: any; // We'll map this on frontend
-  points: string[];
-}
-
 export interface WorkspaceMemory {
-  id: string;
-  sections: WorkspaceMemorySection[];
-  lastUpdated: string;
+  id?: string;
+  partySummary: string | null;
+  factChronology: string | null;
+  legalIssues: string | null;
+  documentIndex: any | null;
+  keyDates: any | null;
+  lawyerNotes: string | null;
+  aiSummary: string | null;
+  estimatedTokens: number;
+  lastUpdated?: string;
 }
 
 class ApiService {
@@ -292,9 +297,7 @@ class ApiService {
 
   async getUserProfile(): Promise<UserProfile> {
     const response = await this.request<ApiResponse<UserProfile>>('/api/user/profile');
-    if (!response.success || !response.data) {
-      throw new Error('Failed to fetch user profile');
-    }
+    if (!response.success || !response.data) throw new Error('Failed to fetch user profile');
     return response.data;
   }
 
@@ -655,6 +658,19 @@ class ApiService {
     return response.data;
   }
 
+  async getLawyerConversation(conversationId: string): Promise<any> {
+    const response = await this.request<ApiResponse<any>>(`/api/lawyer/chat/conversations/${conversationId}`);
+    if (!response.success || !response.data) throw new Error('Failed to fetch conversation');
+    return response.data;
+  }
+
+  async deleteLawyerConversation(conversationId: string): Promise<void> {
+    const response = await this.request<ApiResponse<void>>(`/api/lawyer/chat/conversations/${conversationId}`, {
+      method: "DELETE"
+    });
+    if (!response.success) throw new Error('Failed to delete conversation');
+  }
+
   async getMatterMessages(matterId: string): Promise<MatterMessage[]> {
     const listResponse = await this.request<ApiResponse<any[]>>(`/api/lawyer/chat/conversations?matterId=${matterId}`);
     if (!listResponse.success || !listResponse.data || listResponse.data.length === 0) return [];
@@ -695,6 +711,7 @@ class ApiService {
   async uploadMatterDocument(matterId: string, file: File): Promise<MatterDocument> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('title', file.name); 
     const response = await this.request<ApiResponse<MatterDocument>>(
       `/api/lawyer/matter/${matterId}/documents`,
       { method: 'POST', body: formData }
@@ -712,24 +729,24 @@ class ApiService {
   }
 
   async getMatterDeadlines(matterId: string): Promise<MatterDeadline[]> {
-    const response = await this.request<ApiResponse<any[]>>(`/api/lawyer/matter/${matterId}/events?isDeadline=true`);
+    const response = await this.request<ApiResponse<any[]>>(`/api/lawyer/events?matterId=${matterId}`);
     if (!response.success || !response.data) throw new Error('Failed to fetch deadlines');
     return response.data.map((event: any) => ({
       id: event.id,
       title: event.title,
       notes: event.notes,
-      day: new Date(event.eventDate).getDate().toString().padStart(2, '0'),
-      month: new Date(event.eventDate).toLocaleString('default', { month: 'short' }).toUpperCase(),
-      urgency: event.isUrgent ? 'urgent' : ((event.daysRemaining !== null && event.daysRemaining < 14) ? 'high' : 'normal'),
-      done: event.status === 'COMPLETED',
-      dueDate: event.eventDate,
+      day: new Date(event.dueDate).getDate().toString().padStart(2, '0'), 
+      month: new Date(event.dueDate).toLocaleString('default', { month: 'short' }).toUpperCase(),
+      urgency: 'normal',
+      done: event.completed,
+      dueDate: event.dueDate,
     }));
   }
 
   async addMatterDeadline(matterId: string, payload: Omit<MatterDeadline, 'id' | 'done'>): Promise<MatterDeadline> {
     const response = await this.request<ApiResponse<any>>(
-      `/api/lawyer/matter/${matterId}/events`,
-      { method: 'POST', body: JSON.stringify({ title: payload.title, eventDate: payload.dueDate, isDeadline: true, notes: payload.notes }) }
+      `/api/lawyer/events`,
+      { method: 'POST', body: JSON.stringify({ title: payload.title, eventDate: payload.dueDate, isDeadline: true, notes: payload.notes, matterId }) }
     );
     if (!response.success || !response.data) throw new Error('Failed to add deadline');
     const event = response.data;
@@ -744,8 +761,8 @@ class ApiService {
 
   async toggleMatterDeadline(matterId: string, deadlineId: string, done: boolean): Promise<MatterDeadline> {
     const response = await this.request<ApiResponse<any>>(
-      `/api/lawyer/matter/${matterId}/events/${deadlineId}`,
-      { method: 'PATCH', body: JSON.stringify({ status: done ? 'COMPLETED' : 'PENDING' }) }
+      `/api/lawyer/events/${deadlineId}`,
+      { method: 'PATCH', body: JSON.stringify({ completed: done }) }
     );
     if (!response.success || !response.data) throw new Error('Failed to update deadline');
     const event = response.data;
@@ -762,6 +779,48 @@ class ApiService {
     const response = await this.request<ApiResponse<WorkspaceMemory>>(`/api/lawyer/matter/${matterId}/memory`);
     if (!response.success || !response.data) throw new Error('Failed to fetch workspace memory');
     return response.data;
+  }
+
+  async updateMatterMemory(matterId: string, payload: Partial<WorkspaceMemory>): Promise<WorkspaceMemory> {
+    const response = await this.request<ApiResponse<WorkspaceMemory>>(
+      `/api/lawyer/matter/${matterId}/memory`,
+      { method: 'PATCH', body: JSON.stringify(payload) }
+    );
+    if (!response.success || !response.data) throw new Error('Failed to update workspace memory');
+    return response.data;
+  }
+
+  async regenerateMatterMemory(matterId: string): Promise<void> {
+    const response = await this.request<ApiResponse<any>>(
+      `/api/lawyer/matter/${matterId}/memory/regenerate`,
+      { method: 'POST' }
+    );
+    if (!response.success) throw new Error('Failed to trigger memory regeneration');
+  }
+
+    async getUpcomingDeadlines(daysAhead: number = 30): Promise<any[]> {
+    const response = await this.request<ApiResponse<any[]>>(
+      `/api/lawyer/deadlines?daysAhead=${daysAhead}`
+    );
+    if (!response.success || !response.data) return [];
+    return response.data;
+  }
+
+  async getMatterDocumentsFull(matterId: string): Promise<any[]> {
+    const response = await this.request<ApiResponse<any[]>>(
+      `/api/lawyer/documents?matterId=${matterId}`
+    );
+    if (!response.success || !response.data) return [];
+    return response.data;
+  }
+
+  async getMatters(): Promise<Matter[]> {
+    const response = await this.request<ApiResponse<any>>('/api/lawyer/matter');
+    if (!response.success || !response.data) return [];
+    if (Array.isArray(response.data)) return response.data;
+    if (response.data.matters && Array.isArray(response.data.matters)) return response.data.matters;
+    if (response.data.data && Array.isArray(response.data.data)) return response.data.data;
+    return [];
   }
 }
 

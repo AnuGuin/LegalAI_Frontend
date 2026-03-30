@@ -374,6 +374,18 @@ interface CreateMatterModalProps {
 export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps) {
   const router = useRouter()
 
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const [showTopFade, setShowTopFade] = React.useState(false)
+  const [showBottomFade, setShowBottomFade] = React.useState(true)
+
+  function handleScroll() {
+    const el = scrollRef.current
+    if (!el) return
+
+    setShowTopFade(el.scrollTop > 5)
+    setShowBottomFade(el.scrollHeight - el.scrollTop > el.clientHeight + 5)
+  }
+
   const [step, setStep] = React.useState(1)
   const [loading, setLoading] = React.useState(false)
   const [submitError, setSubmitError] = React.useState<string | null>(null)
@@ -460,7 +472,7 @@ export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps
 
       const matter = await apiService.createMatter(payload)
       handleOpenChange(false)
-      router.push(`/assistant/${matter.id}`)
+      router.push(`/assistant/matter/${matter.id}`)
     } catch (err: any) {
       setSubmitError(
         err?.message?.replace(/^HTTP \d+:\s*/, "") || "Something went wrong. Please try again."
@@ -478,10 +490,19 @@ export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden">
+      <DialogContent
+        className="
+          w-full max-w-2xl
+          h-[90vh] max-h-[90vh]
+          p-0 gap-0
+          flex flex-col
+          overflow-hidden
+          [&>button]:hidden
+        "
+      >
 
         {/* Header */}
-        <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-border/50 space-y-0">
+        <DialogHeader className="sticky top-0 z-20 flex flex-row items-center justify-between px-4 sm:px-6 py-4 border-b border-border/50 bg-background space-y-0">
           <DialogTitle className="text-sm font-semibold tracking-tight m-0">New Matter</DialogTitle>
           <Button
             variant="ghost"
@@ -494,16 +515,36 @@ export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps
         </DialogHeader>
 
         {/* Step bar */}
-        <StepBar current={step} />
+        <div className="sticky top-[57px] z-10 bg-background">
+          <StepBar current={step} />
+        </div>
 
         {/* Body */}
-        <div className="overflow-y-auto max-h-[58vh]">
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="
+            relative
+            overflow-y-auto
+            flex-1
+            scrollbar-hide
+          "
+        >
+          {showTopFade && (
+            <div className="pointer-events-none absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background to-transparent z-10" />
+          )}
 
-          {/* STEP 1: Matter details */}
-          {step === 1 && (
-            <div className="px-6 py-5 space-y-4">
+          {showBottomFade && (
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background to-transparent z-10" />
+          )}
 
-              <Field label="Matter title" required error={errors.title}>
+          <div className="px-4 sm:px-6 py-5 space-y-4 w-full mx-auto">
+
+            {/* STEP 1: Matter details */}
+            {step === 1 && (
+              <div className="space-y-4">
+
+                <Field label="Matter title" required error={errors.title}>
                 <div className="relative">
                   <Scale className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
@@ -607,10 +648,10 @@ export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps
             </div>
           )}
 
-          {/* STEP 2: Parties */}
-          {step === 2 && (
-            <div className="px-6 py-5 space-y-3">
-              {form.parties.map((party) => (
+            {/* STEP 2: Parties */}
+            {step === 2 && (
+              <div className="space-y-3">
+                {form.parties.map((party) => (
                 <PartyCard
                   key={party.id}
                   party={party}
@@ -638,11 +679,11 @@ export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps
             </div>
           )}
 
-          {/* STEP 3: Review */}
-          {step === 3 && (
-            <div className="px-6 py-5 space-y-4">
+            {/* STEP 3: Review */}
+            {step === 3 && (
+              <div className="space-y-4">
 
-              <div className="rounded-lg border border-border/40 bg-card px-4 py-1">
+                <div className="rounded-lg border border-border/40 bg-card px-4 py-1">
                 <ReviewRow label="Matter title" value={form.title} />
                 <ReviewRow
                   label="Practice area"
@@ -688,10 +729,11 @@ export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps
 
             </div>
           )}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="border-t border-border/50 bg-muted/20 px-6 py-3">
+        <div className="sticky bottom-0 z-20 border-t border-border/50 bg-background px-4 sm:px-6 py-3">
 
           {/* Inline error */}
           {submitError && (
