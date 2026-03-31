@@ -14,6 +14,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -251,9 +253,11 @@ export function DocumentGenerationModal({
   const isLawyer = context.isLawyer ?? (user?.userType === 'LAWYER' || user?.role === 'LAWYER' || isLawyerRoute);
   const isCitizen = context.isCitizen ?? (!isLawyer && !!user);
 
-  const allowedTemplates = isCitizen
-    ? ALL_TEMPLATES.filter((t) => CITIZEN_ALLOWED_TEMPLATES.includes(t.id))
-    : ALL_TEMPLATES;
+  const allowedTemplates = React.useMemo(() => {
+    return isCitizen
+      ? ALL_TEMPLATES.filter((t) => CITIZEN_ALLOWED_TEMPLATES.includes(t.id))
+      : ALL_TEMPLATES;
+  }, [isCitizen]);
 
   const [step, setStep] = useState<"pick" | "fill" | "generating" | "done">("pick");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
@@ -427,10 +431,10 @@ export function DocumentGenerationModal({
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
-                    <React.Fragment key={cat}>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    <SelectGroup key={cat}>
+                      <SelectLabel className="font-semibold uppercase tracking-wide text-muted-foreground">
                         {cat}
-                      </div>
+                      </SelectLabel>
                       {allowedTemplates
                         .filter((t) => t.category === cat)
                         .map((t) => (
@@ -441,7 +445,7 @@ export function DocumentGenerationModal({
                             </span>
                           </SelectItem>
                         ))}
-                    </React.Fragment>
+                    </SelectGroup>
                   ))}
                 </SelectContent>
               </Select>

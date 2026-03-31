@@ -117,7 +117,7 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
     const fileInputRef = useRef<HTMLInputElement>(null);
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
     useEffect(() => {
-        if (mode !== 'agentic' || !value.trim() || value.trim().length < 3) {
+        if ((mode !== 'agentic' && !isLawyerModule) || !value.trim() || value.trim().length < 3) {
             setDetectedLanguage(null);
             return;
         }
@@ -506,8 +506,8 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                     </label>
                                 )}
 
-                                {/* Detected language indicator (Agentic mode only) */}
-                                {mode === 'agentic' && detectedLanguage && (
+                                {/* Detected language indicator */}
+                                {(mode === 'agentic' || isLawyerModule) && detectedLanguage && (
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.8, x: -10 }}
                                         animate={{ opacity: 1, scale: 1, x: 0 }}
@@ -521,7 +521,7 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                 )}
 
                                 {/* Detecting indicator */}
-                                {mode === 'agentic' && isDetecting && !detectedLanguage && (
+                                {(mode === 'agentic' || isLawyerModule) && isDetecting && !detectedLanguage && (
                                     <motion.div
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}

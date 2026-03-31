@@ -34,7 +34,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const typeToUse = type || role;
     if (!typeToUse) return null;
     const normalized = typeToUse.toLowerCase();
-    if (normalized === 'citizen') return 'citizen';
+    if (normalized === 'citizen' || normalized === 'user') return 'citizen';
     if (normalized === 'lawyer') return 'lawyer';
     if (normalized === 'firm' || normalized === 'firm_admin' || normalized === 'firm_member') return 'firm';
     return null;
