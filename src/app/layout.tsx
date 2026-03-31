@@ -44,6 +44,11 @@ export const metadata: Metadata = {
   title: "LegalAI",
   description:
     "Transform complex legal questions into clear, actionable insights with our AI-powered legal assistant.",
+  icons: {
+    icon: "/images/light.png",
+    shortcut: "/images/light.png",
+    apple: "/images/light.png",
+  },
 };
 
 export default function RootLayout({

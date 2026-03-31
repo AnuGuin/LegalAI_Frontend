@@ -11,7 +11,6 @@ import { Response as MarkdownResponse } from "@/components/citizen/misc/response
 import AITextLoading from "@/components/citizen/misc/ai-text-loading"
 import AI_Input from "@/components/citizen/misc/ai-chat"
 import { useStream } from "@/hooks/use-stream"
-import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea"
 import { toast } from "sonner"
 
 
@@ -158,9 +157,9 @@ function WelcomeScreen({ onPrompt }: { onPrompt: (p: string) => void }) {
     <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-6">
       <div className="text-center max-w-sm sm:max-w-2xl w-full">
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-primary mb-4 sm:mb-6 font-sans">
-          Nyay Mitra
+          Law Research 
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 px-2">Your AI Legal Intelligence Platform</p>
+        <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 px-2">Powered by Nyay Mitra Agent</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-2 max-w-xs sm:max-w-xl mx-auto">
           {prompts.map(p => (
             <button key={p} type="button" onClick={() => onPrompt(p)}
@@ -255,7 +254,6 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
     setIsSending(true)
     let currentConvId = convId
 
-    // Create conversation if needed — instant URL update via history API
     if (!currentConvId) {
       try {
         const res = await fetch(`${API}/api/lawyer/chat/conversations`, {
@@ -266,7 +264,6 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
         const json = await res.json()
         currentConvId = json?.data?.id
         if (!currentConvId) throw new Error("Failed to create conversation")
-        // ← KEY: instant URL update, no navigation
         updateUrl(currentConvId)
         setConvTitle(content.slice(0, 60))
       } catch (err: any) {
@@ -275,7 +272,6 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
       }
     }
 
-    // Optimistic user message
     const tempId = `temp-${Date.now()}`
     const userMsg: Msg = { 
       id: tempId, 
@@ -289,7 +285,6 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
     try {
       let res: Response
       if (file) {
-        // Use FormData for file uploads
         const formData = new FormData()
         formData.append('message', content)
         formData.append('file', file)
@@ -299,7 +294,6 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
           body: formData,
         })
       } else {
-        // Use JSON for text-only messages
         res = await fetch(`${API}/api/lawyer/chat/conversations/${currentConvId}/messages`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -358,7 +352,6 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
                   isStreaming={streamingMsgId === msg.id}
                   streamContent={streamingContent}
                   onRegenerate={() => {
-                    // Find previous user message before this one
                     for (let j = i - 1; j >= 0; j--) {
                       if (messages[j]?.role === "user") { sendMessage(messages[j]!.content); break }
                     }
@@ -370,7 +363,7 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
             <div ref={messagesEndRef} />
           </div>
         ) : isLoading ? (
-          // Loading skeleton — citizen module style
+          
           <div className="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
             <div className="flex items-start gap-3 justify-end">
               <div className="w-full max-w-[300px] flex flex-col gap-2">
@@ -402,7 +395,7 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
             showModeIndicator={false}
             wrapperClassName="w-full shadow-lg rounded-[32px] bg-background border border-border/50"
           />
-          <p className="text-center text-[10px] text-muted-foreground mt-3 font-light">Legal AI can make mistakes. Please verify important information.</p>
+          <p className="text-center text-[10px] text-muted-foreground mt-1 font-light">Legal AI can make mistakes. Please verify important information.</p>
         </div>
       </div>
     </div>

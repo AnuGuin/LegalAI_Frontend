@@ -6,22 +6,19 @@ import {
   Scale,
   MessageSquare,
   Clock,
-  ArrowRight,
   Folder,
   FolderOpen,
   CheckCircle2,
   Archive,
   Search,
-  Filter,
-  RefreshCw,
-  Trash2,
   ChevronRight,
   Bot,
+  MessageSquareMore,
+  MessageSquareShare
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { apiService, type Matter } from "@/lib/api.service"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -31,7 +28,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+//  Types 
 interface LawyerConversation {
   id: string
   title: string
@@ -42,7 +39,7 @@ interface LawyerConversation {
   matterTitle?: string
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+//  Helpers 
 const stageMeta: Record<string, { label: string; icon: React.ElementType; className: string }> = {
   ACTIVE: {
     label: "Active",
@@ -73,7 +70,7 @@ function timeAgo(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
 }
 
-// ─── Matter History Tab ────────────────────────────────────────────────────────
+//  Matter History Tab 
 function MatterHistoryTab() {
   const router = useRouter()
   const [matters, setMatters] = React.useState<Matter[]>([])
@@ -192,7 +189,7 @@ function MatterHistoryTab() {
   )
 }
 
-// ─── Chat History Tab ──────────────────────────────────────────────────────────
+//  Chat History Tab 
 function ChatHistoryTab() {
   const router = useRouter()
   const [conversations, setConversations] = React.useState<LawyerConversation[]>([])
@@ -264,7 +261,7 @@ function ChatHistoryTab() {
               className="group w-full flex items-start gap-4 p-4 rounded-xl border border-border/60 bg-card hover:border-border hover:shadow-sm transition-all duration-200 text-left"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Bot className="h-5 w-5" />
+                {conv.matterId ? <MessageSquareShare className="h-5 w-5" /> : <MessageSquareMore className="h-5 w-5" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground truncate">{conv.title || "Untitled conversation"}</p>
@@ -291,7 +288,7 @@ function ChatHistoryTab() {
   )
 }
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
+//  Empty State 
 function EmptyState({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center rounded-xl border-2 border-dashed border-border/60 bg-muted/10">
@@ -304,7 +301,7 @@ function EmptyState({ icon: Icon, title, description }: { icon: React.ElementTyp
   )
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────────
+//  Page 
 export default function HistoryPage() {
   return (
     <div className="flex-1 overflow-y-auto">

@@ -12,6 +12,7 @@ import {
   PanelLeft,
   FileSignature,
 } from "lucide-react"
+import { Logo } from "@/components/ui/logo"
 import { NavMain } from "@/components/lawyer/dashboard/nav-main"
 import { NavUser } from "@/components/lawyer/dashboard/nav-user"
 import {
@@ -26,7 +27,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ onCreateMatter, ...props }: AppSidebarProps) {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar, open } = useSidebar()
   const { user } = useUser()
   const pathname = usePathname()
 
@@ -54,13 +55,13 @@ export function AppSidebar({ onCreateMatter, ...props }: AppSidebarProps) {
       <SidebarHeader className="pb-0">
         {/* Logo + collapse toggle */}
         <div className="flex items-center justify-between py-3 px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 overflow-hidden w-full">
-          <div className="grid flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
-            <span className="text-base font-semibold leading-tight text-sidebar-foreground tracking-tight truncate">
-              Nyay Mitra
-            </span>
-            <span className="text-xs text-sidebar-foreground/50 tracking-wide uppercase truncate">
-              Legal AI Platform
-            </span>
+          <div className="flex items-center gap-2 flex-1 group-data-[collapsible=icon]:hidden">
+            <Logo
+              collapsed={!open}
+              showText={open}
+              variant="sidebar"
+              className="flex-shrink-0"
+            />
           </div>
           <div
             onClick={toggleSidebar}

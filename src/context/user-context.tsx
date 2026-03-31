@@ -7,9 +7,10 @@ interface User {
   email: string;
   name: string;
   avatar?: string;
-  provider: string;
-  userType: string;
-  createdAt: string;
+  provider?: string;
+  userType?: string;
+  role?: string; 
+  createdAt?: string;
   lastLoginAt?: string;
 }
 
@@ -29,18 +30,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const normalizeUserType = (type?: string): 'citizen' | 'lawyer' | 'firm' | null => {
-    if (!type) return null;
-    const normalized = type.toLowerCase();
+  const normalizeUserType = (type?: string, role?: string): 'citizen' | 'lawyer' | 'firm' | null => {
+    const typeToUse = type || role;
+    if (!typeToUse) return null;
+    const normalized = typeToUse.toLowerCase();
     if (normalized === 'citizen') return 'citizen';
     if (normalized === 'lawyer') return 'lawyer';
-    if (normalized === 'firm' || normalized === 'firm_admin') return 'firm';
+    if (normalized === 'firm' || normalized === 'firm_admin' || normalized === 'firm_member') return 'firm';
     return null;
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('authToken');
+    const storedUser = localStorage.getItem('user') || localStorage.getItem('lawyerUser') || localStorage.getItem('firmUser');
+    
+    const token = localStorage.getItem('authToken') || 
+                  localStorage.getItem('lawyerToken') || 
+                  localStorage.getItem('lawyerAuthToken') || 
+                  localStorage.getItem('token');
     
     if (storedUser && token) {
       try {
@@ -49,7 +55,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('Failed to parse stored user:', error);
         localStorage.removeItem('user');
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('lawyerUser');
       }
     }
     
@@ -64,14 +70,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('lawyerUser');
+    localStorage.removeItem('firmUser');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('lawyerToken');
+    localStorage.removeItem('lawyerAuthToken');
+    localStorage.removeItem('token');
   };
 
   const value: UserContextType = {
     user,
-    isCitizen: normalizeUserType(user?.userType) === 'citizen',
-    isLawyer: normalizeUserType(user?.userType) === 'lawyer',
-    isFirm: normalizeUserType(user?.userType) === 'firm',
+    isCitizen: normalizeUserType(user?.userType, user?.role) === 'citizen',
+    isLawyer: normalizeUserType(user?.userType, user?.role) === 'lawyer',
+    isFirm: normalizeUserType(user?.userType, user?.role) === 'firm',
     isLoading,
     login,
     logout,

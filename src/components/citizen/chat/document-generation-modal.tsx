@@ -32,7 +32,6 @@ import { apiService } from "@/lib/api.service";
 import type { TemplateField, TemplateSchema, GenerateDocumentResult } from "@/lib/api.service";
 import { useUser } from "@/context/user-context";
 
-
 const CITIZEN_ALLOWED_TEMPLATES = [
   "legal_notice.j2",
   "cheque_bounce_notice.j2",
@@ -41,7 +40,6 @@ const CITIZEN_ALLOWED_TEMPLATES = [
 ];
 
 const ALL_TEMPLATES = [
-
   {
     id: "legal_notice.j2",
     name: "Legal Notice",
@@ -70,7 +68,6 @@ const ALL_TEMPLATES = [
     description: "Pre-complaint notice under Consumer Protection Act 2019",
     icon: "🛡️",
   },
- 
   {
     id: "affidavit.j2",
     name: "Affidavit",
@@ -106,7 +103,6 @@ const ALL_TEMPLATES = [
     description: "Constitutional remedy under Article 32/226",
     icon: "⚖️",
   },
-
   {
     id: "settlement_deed.j2",
     name: "Settlement Deed",
@@ -114,7 +110,6 @@ const ALL_TEMPLATES = [
     description: "Binding settlement for dispute resolution",
     icon: "🤝",
   },
-
   {
     id: "power_of_attorney.j2",
     name: "Power of Attorney",
@@ -122,7 +117,6 @@ const ALL_TEMPLATES = [
     description: "Authorization to act for legal/financial matters",
     icon: "📝",
   },
-
   {
     id: "contract_agreement.j2",
     name: "Contract Agreement",
@@ -130,7 +124,6 @@ const ALL_TEMPLATES = [
     description: "General contract between parties",
     icon: "📑",
   },
-
   {
     id: "loan_agreement.j2",
     name: "Loan Agreement",
@@ -138,7 +131,6 @@ const ALL_TEMPLATES = [
     description: "Loan agreement with repayment terms",
     icon: "💰",
   },
-  
   {
     id: "rent_agreement.j2",
     name: "Rental Agreement",
@@ -154,15 +146,11 @@ const FORMAT_OPTIONS: { value: "pdf" | "docx" | "txt"; label: string; desc: stri
   { value: "txt", label: "Plain Text", desc: "Simple text file" },
 ];
 
-
-
 interface DocumentGenerationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDocumentGenerated?: (result: GenerateDocumentResult) => void;
 }
-
-
 
 function fieldLabel(field: TemplateField): string {
   if (field.description && field.description.trim()) return field.description;
@@ -170,7 +158,6 @@ function fieldLabel(field: TemplateField): string {
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
-
 
 function InputForField({
   field,
@@ -251,13 +238,19 @@ function InputForField({
   );
 }
 
-
 export function DocumentGenerationModal({
   open,
   onOpenChange,
   onDocumentGenerated,
 }: DocumentGenerationModalProps) {
-  const { user, isCitizen, isLawyer, isLoading } = useUser();
+  const context = useUser() as any;
+  const user = context?.user;
+  const isLoading = context?.isLoading;
+
+  const isLawyerRoute = typeof window !== 'undefined' && window.location.pathname.includes('/lawyer');
+  const isLawyer = context.isLawyer ?? (user?.userType === 'LAWYER' || user?.role === 'LAWYER' || isLawyerRoute);
+  const isCitizen = context.isCitizen ?? (!isLawyer && !!user);
+
   const allowedTemplates = isCitizen
     ? ALL_TEMPLATES.filter((t) => CITIZEN_ALLOWED_TEMPLATES.includes(t.id))
     : ALL_TEMPLATES;
@@ -273,7 +266,14 @@ export function DocumentGenerationModal({
   const categories = [...new Set(allowedTemplates.map((t) => t.category))];
 
   useEffect(() => {
-    if (!selectedTemplateId || !open) return;
+    if (!selectedTemplateId || !open || isLoading || !user) return;
+    
+    const isAllowed = allowedTemplates.some(t => t.id === selectedTemplateId);
+    if (!isAllowed) {
+      setSelectedTemplateId("");
+      return;
+    }
+    
     setSchemaLoading(true);
     setSchema(null);
     setFormData({});
@@ -288,11 +288,15 @@ export function DocumentGenerationModal({
         });
         setFormData(init);
       })
-      .catch(() => {
-        toast.error("Failed to load template", { description: "Could not fetch field details for this template." });
+      .catch((error) => {
+        if (error.status === 403 || error.status === 401) {
+          toast.error("Access Denied", { description: "You don't have permission to access this template. Make sure you are logged in." });
+        } else {
+          toast.error("Failed to load template", { description: "Could not fetch field details for this template." });
+        }
       })
       .finally(() => setSchemaLoading(false));
-  }, [selectedTemplateId, open]);
+  }, [selectedTemplateId, open, isLoading, user, allowedTemplates]);
 
   const handleGenerate = useCallback(async () => {
     if (!selectedTemplateId || !schema) return;
@@ -334,7 +338,7 @@ export function DocumentGenerationModal({
       setStep("fill");
       toast.error("Generation failed", { description: error?.message ?? "An unexpected error occurred. Please try again." });
     }
-  }, [selectedTemplateId, schema, formData, format, onDocumentGenerated, toast]);
+  }, [selectedTemplateId, schema, formData, format, onDocumentGenerated]);
 
   const resetForm = () => {
     setStep("pick");
@@ -349,6 +353,24 @@ export function DocumentGenerationModal({
     onOpenChange(false);
     resetForm();
   };
+
+  useEffect(() => {
+    if (open) {
+      setStep("pick");
+      setSelectedTemplateId("");
+      setFormat("pdf");
+      setSchema(null);
+      setFormData({});
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (selectedTemplateId && !allowedTemplates.some(t => t.id === selectedTemplateId)) {
+      setSelectedTemplateId("");
+      setSchema(null);
+      setFormData({});
+    }
+  }, [allowedTemplates, selectedTemplateId]);
 
   const selectedTemplateMeta = ALL_TEMPLATES.find((t) => t.id === selectedTemplateId);
 
@@ -389,9 +411,7 @@ export function DocumentGenerationModal({
 
         <div className="grid gap-6 py-2">
 
-          {/* ── Step 1: Template + Format picker  */}
           <div className="grid sm:grid-cols-2 gap-4">
-            {/* Template selector */}
             <div className="space-y-2">
               <Label className="text-sm text-foreground">Document Template</Label>
               <Select
@@ -432,7 +452,6 @@ export function DocumentGenerationModal({
               )}
             </div>
 
-            {/* Format selector */}
             <div className="space-y-2">
               <Label className="text-sm text-foreground">Output Format</Label>
               <Select
@@ -457,7 +476,6 @@ export function DocumentGenerationModal({
             </div>
           </div>
 
-          {/*  Schema loading skeleton */}
           {schemaLoading && (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -469,10 +487,8 @@ export function DocumentGenerationModal({
             </div>
           )}
 
-          {/* Step 2: Dynamic form */}
           {schema && !schemaLoading && step !== "generating" && step !== "done" && (
             <div className="space-y-4">
-              {/* Critical fields first, then optional */}
               {[
                 schema.all_fields.filter((f) => f.required),
                 schema.all_fields.filter((f) => !f.required),
@@ -524,7 +540,6 @@ export function DocumentGenerationModal({
             </div>
           )}
 
-          {/* Generating animation */}
           {step === "generating" && (
             <div className="flex flex-col items-center justify-center py-10 space-y-5">
               <div className="relative">
@@ -548,7 +563,6 @@ export function DocumentGenerationModal({
             </div>
           )}
 
-          {/* Download card */}
           {step === "done" && generationResult && (
             <div className="rounded-xl border border-border/60 bg-muted/40 p-4 space-y-3">
               <div className="flex items-start gap-3">
@@ -598,7 +612,6 @@ export function DocumentGenerationModal({
           )}
         </div>
 
-        {/* Footer */}
         {step !== "done" && (
           <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 pt-4 border-t border-border/50">
             <Button

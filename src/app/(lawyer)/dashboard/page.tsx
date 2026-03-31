@@ -39,7 +39,7 @@ const quickActions: QuickAction[] = [
     title: "Research Cases",
     description: "Search judgments and legal provisions.",
     icon: BookOpen,
-    href: "/assistant",
+    href: "/assistant/chat/new",
     iconBg: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400",
     accent: "group-hover:border-emerald-200 dark:group-hover:border-emerald-800",
   },

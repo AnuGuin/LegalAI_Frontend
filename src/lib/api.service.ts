@@ -211,7 +211,10 @@ class ApiService {
   }
 
   private getAuthToken(): string | null {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem('authToken') || 
+           localStorage.getItem('lawyerToken') || 
+           localStorage.getItem('lawyerAuthToken') || 
+           localStorage.getItem('token');
   }
 
   private getLocalStats(): UserStats {
@@ -617,12 +620,13 @@ class ApiService {
 
 
   async getTemplateSchema(templateName: string): Promise<TemplateSchema> {
-    const response = await this.request<ApiResponse<TemplateSchema>>(
-      `/api/documents/templates/${encodeURIComponent(templateName)}/schema`
-    );
-    if (!response.success || !response.data) throw new Error('Failed to fetch template schema');
-    return response.data;
-  }
+      const safeName = templateName.replace('.j2', ''); 
+      const response = await this.request<ApiResponse<TemplateSchema>>(
+        `/api/documents/templates/${encodeURIComponent(safeName)}/schema`
+      );
+      if (!response.success || !response.data) throw new Error('Failed to fetch template schema');
+      return response.data;
+    }
 
   async downloadDocument(id: string): Promise<void> {
     const token = this.getAuthToken();
