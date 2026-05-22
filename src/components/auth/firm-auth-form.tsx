@@ -296,10 +296,10 @@ export default function FirmAuthForm({ mode }: FirmAuthFormProps) {
   return (
     <div className="h-screen w-full flex flex-col md:flex-row gap-4 p-4 bg-background">
       {/* Left — Aurora branding panel (fixed) */}
-      <div className="hidden md:flex md:w-1/2 relative overflow-hidden bg-[#060010] rounded-2xl">
+      <div className="hidden md:flex md:w-1/2 relative overflow-hidden bg-[#03020d] rounded-2xl">
         <div className="absolute inset-0">
           <Aurora
-            colorStops={["#060010", "#f0c6a3", "#b36b76"]}
+            colorStops={["#03020d", "#3b4ff8", "#8a2be2"]}
             blend={0.3}
             amplitude={0.5}
             speed={0.4}
@@ -347,7 +347,7 @@ export default function FirmAuthForm({ mode }: FirmAuthFormProps) {
               <Button
                 variant="default"
                 onClick={() => router.push('/#home')}
-                className="w-full bg-gradient-to-b from-[#c9a882] to-[#8a6245] text-white/90 font-medium h-11 gap-2 shadow-inner cursor-pointer hover:text-white"
+                className="w-full bg-gradient-to-r from-[#3b4ff8] to-[#8a2be2] text-white/90 font-medium h-11 gap-2 shadow-lg cursor-pointer hover:text-white hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
               >
                 <Home className="h-4 w-4" />
                 Home

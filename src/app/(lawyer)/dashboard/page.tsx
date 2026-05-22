@@ -114,13 +114,7 @@ export default function LawyerDashboardPage() {
   }
 
   const handleDocumentGenerationRequest = async (result: any) => {
-    try {
-      const { templateName, data, format } = result
-      const docResult = await apiService.generateDocument(templateName, data, format || 'pdf')
-      apiService.downloadBlob(docResult.blob, docResult.filename)
-    } catch (error) {
-      console.error("Document generation failed", error)
-    }
+    // Document generation and downloading is handled entirely within DocumentGenerationModal
   }
 
   return (

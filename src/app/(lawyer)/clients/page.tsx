@@ -273,7 +273,7 @@ function CommsGenerator({ client }: { client: ClientRecord }) {
       <Button
         onClick={handleGenerate}
         disabled={generating || !selectedMatter || !eventContext.trim()}
-        className="w-full bg-[#1A3A5C] hover:bg-[#244d7a] text-white gap-2 h-10"
+        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-10"
       >
         {generating
           ? <><Loader2 className="h-4 w-4 animate-spin" />Generating…</>

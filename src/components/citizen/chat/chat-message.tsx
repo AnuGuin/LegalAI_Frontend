@@ -34,7 +34,7 @@ interface ChatMessagesAreaRef {
 }
 
 
-function ChatMessage({
+export function ChatMessage({
   message,
   isStreaming,
   streamingContent,
@@ -255,18 +255,31 @@ function WelcomeScreen({ user, onSendMessage, selectedMode, onDocumentGeneration
   onDocumentGenerationRequest?: (data: any) => void;
 }) {
   return (
-   <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex items-center justify-center p-4 sm:p-6" style={{ top: 'calc(50% - 50px)' }}>
-      <div className="text-center max-w-2xl w-full">
-        <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-primary" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
+    <>
+      {/* Mobile: greeting centered, input pinned to bottom */}
+      <div className="sm:hidden absolute inset-0 flex items-center justify-center px-3">
+        <div className="text-center w-full">
+          <h1 className="text-3xl font-semibold text-primary" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
             Hello {user.name.split(' ')[0]}
           </h1>
-        </div>
-        <div className="w-full hidden sm:block">
-          <AI_Input onSendMessage={onSendMessage} mode={selectedMode} showModeIndicator={true} onDocumentGenerationRequest={onDocumentGenerationRequest} />
+          <p className="mt-2 text-sm text-muted-foreground/60">How can I help you today?</p>
         </div>
       </div>
-    </div>
+
+      {/* Desktop: greeting + input centered together */}
+      <div className="hidden sm:flex absolute left-0 right-0 top-1/2 -translate-y-1/2 items-center justify-center px-6" style={{ top: 'calc(50% - 50px)' }}>
+        <div className="text-center max-w-2xl w-full">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-semibold text-primary" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
+              Hello {user.name.split(' ')[0]}
+            </h1>
+          </div>
+          <div className="w-full">
+            <AI_Input onSendMessage={onSendMessage} mode={selectedMode} showModeIndicator={true} onDocumentGenerationRequest={onDocumentGenerationRequest} hasActiveConversation={false} />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -403,17 +416,34 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
           )}
         </div>
 
+        {/* Mobile: input pinned at bottom on welcome screen */}
+        {!hasMessages && (
+          <div className="sm:hidden absolute bottom-0 left-0 w-full pt-10 pb-safe-bottom pb-4 px-3 z-10 pointer-events-none bg-gradient-to-t from-background via-background/90 to-transparent">
+            <div className="pointer-events-auto">
+              <AI_Input
+                onSendMessage={onSendMessage}
+                mode={selectedMode}
+                showModeIndicator={false}
+                onDocumentGenerationRequest={onDocumentGenerationRequest}
+                hasActiveConversation={false}
+                wrapperClassName="w-full"
+              />
+            </div>
+          </div>
+        )}
+
         {hasMessages && (
-          <div className="absolute bottom-0 left-0 w-full pt-16 pb-6 px-4 z-10 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+          <div className="absolute bottom-0 left-0 w-full pt-16 pb-6 px-4 z-10 pointer-events-none bg-gradient-to-t from-background via-background/95 to-transparent">
               <div className="max-w-3xl mx-auto flex flex-col items-center pointer-events-auto">
                 <AI_Input 
                   onSendMessage={onSendMessage} 
                   mode={selectedMode} 
                   showModeIndicator={false} 
                   onDocumentGenerationRequest={onDocumentGenerationRequest} 
-                  wrapperClassName="w-full shadow-lg rounded-[32px] bg-background border border-border/50"
+                  hasActiveConversation={true}
+                  wrapperClassName="w-full rounded-[32px] bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_1px_4px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35),0_1px_4px_rgb(0,0,0,0.15)] focus-within:ring-1 focus-within:ring-black/15 dark:focus-within:ring-white/15 focus-within:border-black/15 dark:focus-within:border-white/15 transition-all"
                 />
-                <div className="flex items-center justify-center font-light text-[10px] gap-1 mt-3 text-muted-foreground">
+                <div className="hidden sm:flex items-center justify-center font-light text-[10px] gap-1 mt-3 text-muted-foreground">
                   <p>Legal AI can make mistakes. Please verify important information.</p>
                   <a
                     href="#cookies"
@@ -451,7 +481,6 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
 
 ChatMessagesArea.displayName = "ChatMessagesArea";
 
-export { ChatMessage };
 
 
 

@@ -249,9 +249,17 @@ export function DocumentGenerationModal({
   const user = context?.user;
   const isLoading = context?.isLoading;
 
-  const isLawyerRoute = typeof window !== 'undefined' && window.location.pathname.includes('/lawyer');
-  const isLawyer = context.isLawyer ?? (user?.userType === 'LAWYER' || user?.role === 'LAWYER' || isLawyerRoute);
-  const isCitizen = context.isCitizen ?? (!isLawyer && !!user);
+  const isLawyerRoute = typeof window !== 'undefined' && (
+    window.location.pathname.includes('/lawyer') ||
+    window.location.pathname.startsWith('/dashboard') ||
+    window.location.pathname.startsWith('/assistant') ||
+    window.location.pathname.startsWith('/contract') ||
+    window.location.pathname.startsWith('/matters') ||
+    window.location.pathname.startsWith('/documents') ||
+    window.location.pathname.startsWith('/deadlines')
+  );
+  const isLawyer = context.isLawyer || user?.userType === 'LAWYER' || user?.role === 'LAWYER' || isLawyerRoute;
+  const isCitizen = !isLawyer && (context.isCitizen || !!user);
 
   const allowedTemplates = React.useMemo(() => {
     return isCitizen

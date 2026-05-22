@@ -12,6 +12,8 @@ import { DeleteConversationDialog } from "./delete-conversation-dialog";
 import { useRouter } from "next/navigation";
 import { useStream } from "@/hooks/use-stream";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface ChatInterfaceProps {
   user: { name: string; email: string; avatar?: string };
@@ -35,29 +37,61 @@ function transformMessage(msg: BackendMessage): Message {
 function mergeMessages(currentMessages: Message[], newMessages: Message[]): Message[] {
   const currentMap = new Map(currentMessages.map(m => [m.id, m]));
   const tempUserMessages = currentMessages.filter(m => m.id.startsWith('temp-') && m.role === 'user');
-  
+
   return newMessages.map(newMsg => {
     if (currentMap.has(newMsg.id)) {
       const current = currentMap.get(newMsg.id)!;
       return { ...newMsg, uiKey: current.uiKey || current.id };
     }
-    
+
     if (newMsg.role === 'user') {
       const match = tempUserMessages.find(temp => temp.content === newMsg.content);
       if (match) {
         return { ...newMsg, uiKey: match.uiKey || match.id };
       }
     }
-    
+
     return { ...newMsg, uiKey: newMsg.id };
   });
 }
 
-const BackgroundLayer: React.FC = () => (
-  <div
-    className="absolute inset-0 z-0 bg-background"
-  />
-);
+const BackgroundLayer: React.FC<{ selectedMode: "chat" | "agentic"; hasActiveConversation: boolean }> = ({
+  selectedMode,
+  hasActiveConversation,
+}) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  return (
+    <>
+      <div
+        className="absolute inset-0 z-0 bg-background transition-opacity duration-700 ease-in-out"
+        style={{
+          opacity: (selectedMode === "chat" || hasActiveConversation) ? 1 : 0,
+        }}
+      />
+      <div
+        className="absolute inset-0 z-0 transition-opacity duration-700 ease-in-out"
+        style={{
+          background: isDark
+            ? `radial-gradient(ellipse 100% 70% at 55% 58%, rgba(138, 43, 226, 0.20), transparent 60%),
+               radial-gradient(ellipse 85% 55% at 45% 53%, rgba(0, 255, 255, 0.14), transparent 55%),
+               radial-gradient(ellipse 75% 50% at 65% 63%, rgba(255, 20, 147, 0.16), transparent 55%),
+               radial-gradient(ellipse 85% 45% at 58% 50%, rgba(255, 215, 0, 0.09), transparent 45%),
+               #000000`
+            : `radial-gradient(ellipse 100% 70% at 55% 58%, rgba(59, 130, 246, 0.18), transparent 60%),
+               radial-gradient(ellipse 85% 55% at 45% 53%, rgba(14, 165, 233, 0.22), transparent 55%),
+               radial-gradient(ellipse 75% 50% at 65% 63%, rgba(56, 189, 248, 0.18), transparent 55%),
+               radial-gradient(ellipse 85% 45% at 58% 50%, rgba(37, 99, 235, 0.12), transparent 45%),
+               #ffffff`,
+          opacity: (selectedMode === "agentic" && !hasActiveConversation) ? 1 : 0,
+        }}
+      />
+    </>
+  );
+};
+
+
 
 export function ChatInterface({ user, onLogout, initialConversationId }: ChatInterfaceProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -125,10 +159,10 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
               prev.map((c) =>
                 c.id === initialConversationId
                   ? {
-                      ...fullConversation,
-                      messages: transformedMessages,
-                      lastMessage: transformedMessages[transformedMessages.length - 1]?.content || "",
-                    }
+                    ...fullConversation,
+                    messages: transformedMessages,
+                    lastMessage: transformedMessages[transformedMessages.length - 1]?.content || "",
+                  }
                   : c
               )
             );
@@ -202,10 +236,10 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
           prev.map((conv) =>
             conv.id === convId
               ? {
-                  ...conv,
-                  messages: [...(conv.messages || []), userMessage],
-                  lastMessage: content,
-                }
+                ...conv,
+                messages: [...(conv.messages || []), userMessage],
+                lastMessage: content,
+              }
               : conv
           )
         );
@@ -221,12 +255,12 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
           prev.map((conv) =>
             conv.id === convId
               ? {
-                  ...fullConversation,
-                  messages: mergeMessages(conv.messages || [], transformedMessages),
-                  lastMessage: lastAssistantMessage?.content || "",
-                  sessionId: (response as any)?.conversation?.sessionId ?? conv.sessionId,
-                  documentId: (response as any)?.conversation?.documentId ?? conv.documentId,
-                }
+                ...fullConversation,
+                messages: mergeMessages(conv.messages || [], transformedMessages),
+                lastMessage: lastAssistantMessage?.content || "",
+                sessionId: (response as any)?.conversation?.sessionId ?? conv.sessionId,
+                documentId: (response as any)?.conversation?.documentId ?? conv.documentId,
+              }
               : conv
           )
         );
@@ -240,13 +274,13 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
                 prev.map((conv) =>
                   conv.id === convId
                     ? {
-                        ...conv,
-                        messages:
-                          conv.messages?.map((msg) =>
-                            msg.id === lastAssistantMessage.id ? { ...msg, content: nextChunk } : msg
-                          ) ?? [],
-                        lastMessage: nextChunk,
-                      }
+                      ...conv,
+                      messages:
+                        conv.messages?.map((msg) =>
+                          msg.id === lastAssistantMessage.id ? { ...msg, content: nextChunk } : msg
+                        ) ?? [],
+                      lastMessage: nextChunk,
+                    }
                     : conv
                 )
               );
@@ -258,7 +292,7 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
         console.error("Failed to send message:", error);
         const status = (error as any)?.status;
         const body = (error as any)?.body;
-        toast.error("Failed to send message", { description: (body?.message || (error instanceof Error ? error.message : "Please try again"))});
+        toast.error("Failed to send message", { description: (body?.message || (error instanceof Error ? error.message : "Please try again")) });
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           content: "I apologize, but I'm having trouble processing your request right now. Please try again.",
@@ -299,10 +333,10 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
           prev.map((c) =>
             c.id === id
               ? {
-                  ...fullConversation,
-                  messages: transformedMessages,
-                  lastMessage: transformedMessages[transformedMessages.length - 1]?.content || "",
-                }
+                ...fullConversation,
+                messages: transformedMessages,
+                lastMessage: transformedMessages[transformedMessages.length - 1]?.content || "",
+              }
               : c
           )
         );
@@ -323,11 +357,17 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
       try {
         const result = await apiService.shareConversation(activeConversation.id, true);
         if (result.link) {
+          let token = result.link;
+          if (result.link.includes("/")) {
+            const parts = result.link.split("?")[0].split("/");
+            token = parts.pop() || parts.pop() || "";
+          }
+          const frontendLink = `${window.location.origin}/ai/shared/${token}`;
           try {
-            await navigator.clipboard.writeText(result.link);
+            await navigator.clipboard.writeText(frontendLink);
             toast("Share link copied", { description: "A secure shareable link has been created and copied to your clipboard." });
           } catch {
-            toast.success("Share link created", { description: result.link });
+            toast.success("Share link created", { description: frontendLink });
           }
         } else if (result.message) {
           toast("Share status", { description: result.message });
@@ -383,7 +423,7 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
         className="flex h-screen relative overflow-hidden chat-interface-container w-full"
         style={{ height: "100dvh" }}
       >
-        <BackgroundLayer />
+        <BackgroundLayer selectedMode={selectedMode} hasActiveConversation={!!activeConversationId} />
 
         <ChatSidebar
           user={user}
@@ -395,57 +435,64 @@ export function ChatInterface({ user, onLogout, initialConversationId }: ChatInt
           isLoadingConversations={isLoadingConversations}
           mobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
+          mode={selectedMode}
         />
 
         <div
           className="flex-1 flex flex-col min-h-0 relative z-10 min-w-0 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] w-full"
         >
-        <div className="sticky top-0 z-20 bg-background">
-          <ChatModeSelector
-            variant={activeConversation ? "chat-selected" : "default"}
-            onModeChange={handleModeChange}
-            onTempChatClick={handleTempChatClick}
-            onShareClick={handleShareConversation}
-            onDeleteClick={handleDeleteConversation}
-            onMobileMenuClick={() => setIsMobileSidebarOpen(true)}
-          />
-        </div>
-
-        {isLoadingActiveConversation ? (
-          <div className="flex-1 overflow-y-auto">
-            <ConversationSkeleton />
+          <div className={cn(
+            "sticky top-0 z-20 transition-all duration-300",
+            selectedMode === "agentic"
+              ? "bg-transparent backdrop-blur-md border-b-0"
+              : "bg-background"
+          )}>
+            <ChatModeSelector
+              variant={activeConversation ? "chat-selected" : "default"}
+              defaultMode={selectedMode}
+              onModeChange={handleModeChange}
+              onTempChatClick={handleTempChatClick}
+              onShareClick={handleShareConversation}
+              onDeleteClick={handleDeleteConversation}
+              onMobileMenuClick={() => setIsMobileSidebarOpen(true)}
+            />
           </div>
-        ) : (
-          <ChatMessagesArea
-            ref={messagesAreaRef}
-            user={user}
-            activeConversation={
-              activeConversation
-                ? {
+
+          {isLoadingActiveConversation ? (
+            <div className="flex-1 overflow-y-auto">
+              <ConversationSkeleton />
+            </div>
+          ) : (
+            <ChatMessagesArea
+              ref={messagesAreaRef}
+              user={user}
+              activeConversation={
+                activeConversation
+                  ? {
                     ...activeConversation,
                     messages: activeConversation.messages || [],
                     lastMessage: activeConversation.lastMessage || "",
                   }
-                : undefined
-            }
-            isLoading={isLoading}
-            selectedMode={selectedMode}
-            streamingMessageId={messageId}
-            streamingContent={streamingContent}
-            onSendMessage={handleSendMessage}
-            isNewConversationSelected={isNewConversationSelected}
-            onRegenerate={handleSendMessage}
-          />
-        )}
-      </div>
+                  : undefined
+              }
+              isLoading={isLoading}
+              selectedMode={selectedMode}
+              streamingMessageId={messageId}
+              streamingContent={streamingContent}
+              onSendMessage={handleSendMessage}
+              isNewConversationSelected={isNewConversationSelected}
+              onRegenerate={handleSendMessage}
+            />
+          )}
+        </div>
 
-      <DeleteConversationDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={confirmDeleteConversation}
-        conversationTitle={activeConversation?.title}
-      />
-    </div>
+        <DeleteConversationDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={confirmDeleteConversation}
+          conversationTitle={activeConversation?.title}
+        />
+      </div>
     </SidebarProvider>
   );
 }

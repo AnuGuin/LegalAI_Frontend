@@ -503,7 +503,7 @@ export default function ContractAnalyserPage() {
           <Button
             onClick={handleAnalyse}
             disabled={!file || loading}
-            className="w-full bg-[#1A3A5C] hover:bg-[#244d7a] text-white h-10 gap-2"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-10 gap-2"
           >
             {loading ? (
               <><Loader2 className="h-4 w-4 animate-spin" />Analysing contract…</>

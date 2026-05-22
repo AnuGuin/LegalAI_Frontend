@@ -70,10 +70,10 @@ interface UserStats {
 
 interface TemplateField {
   name: string;
-  required: boolean;       
-  field_type: string;      
-  description: string;     
-  placeholder: string;     
+  required: boolean;
+  field_type: string;
+  description: string;
+  placeholder: string;
 }
 
 interface TemplateSchema {
@@ -95,13 +95,13 @@ interface Document {
 }
 
 interface GenerateDocumentResult {
-  documentId: string;          
-  generationStatus: string;    
+  documentId: string;
+  generationStatus: string;
   completionPercentage: number;
-  warning: string | null;      
-  blob: Blob;                  
-  filename: string;            
-  mimeType: string;            
+  warning: string | null;
+  blob: Blob;
+  filename: string;
+  mimeType: string;
 }
 
 interface MatterParty {
@@ -140,7 +140,7 @@ interface Matter {
   updatedAt?: string;
 }
 
-export interface OmitMatter extends Omit<Matter, 'priority' | 'court' | 'description'> {}
+export interface OmitMatter extends Omit<Matter, 'priority' | 'court' | 'description'> { }
 
 export interface MatterDetail extends OmitMatter {
   description: string;
@@ -211,10 +211,10 @@ class ApiService {
   }
 
   private getAuthToken(): string | null {
-    return localStorage.getItem('authToken') || 
-           localStorage.getItem('lawyerToken') || 
-           localStorage.getItem('lawyerAuthToken') || 
-           localStorage.getItem('token');
+    return localStorage.getItem('authToken') ||
+      localStorage.getItem('lawyerToken') ||
+      localStorage.getItem('lawyerAuthToken') ||
+      localStorage.getItem('token');
   }
 
   private getLocalStats(): UserStats {
@@ -232,13 +232,13 @@ class ApiService {
     if (type === 'trans') stats.translationCount++;
     localStorage.setItem('userStats', JSON.stringify(stats));
   }
-  
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
     const token = this.getAuthToken();
-    
+
     const headers: Record<string, string> = {
       ...options.headers as Record<string, string>,
     };
@@ -269,7 +269,7 @@ class ApiService {
       }
 
       console.log('API Request:', { method: options.method || 'GET', url, headers, body: requestBodyForLog });
-      
+
       const response = await fetch(url, {
         ...options,
         headers,
@@ -334,7 +334,7 @@ class ApiService {
 
   async deleteAccount(): Promise<void> {
     const response = await this.request<ApiResponse<void>>(
-      '/api/user/profile', 
+      '/api/user/profile',
       { method: 'DELETE' }
     );
     if (!response.success) {
@@ -440,7 +440,7 @@ class ApiService {
     }
 
     if (file || mode === 'AGENTIC') {
-       this.updateLocalStats('doc');
+      this.updateLocalStats('doc');
     }
 
     return response.data;
@@ -490,8 +490,24 @@ class ApiService {
     return response.data;
   }
 
-  async getSharedConversation(shareLink: string): Promise<{ userName: string; conversation: Conversation }> {
-    const response = await this.request<ApiResponse<{ userName: string; conversation: Conversation }>>(
+  async getSharedConversation(shareLink: string): Promise<{
+    userName: string;
+    conversation: Conversation;
+    shareInfo?: {
+      viewCount: number;
+      maxViews: number | null;
+      expiresAt: string | null;
+    };
+  }> {
+    const response = await this.request<ApiResponse<{
+      userName: string;
+      conversation: Conversation;
+      shareInfo?: {
+        viewCount: number;
+        maxViews: number | null;
+        expiresAt: string | null;
+      };
+    }>>(
       `/api/chat/shared/${encodeURIComponent(shareLink)}`
     );
 
@@ -516,11 +532,11 @@ class ApiService {
         body: JSON.stringify(params),
       }
     );
-    
+
     if (response.success) {
-        this.updateLocalStats('trans');
+      this.updateLocalStats('trans');
     }
-    
+
     return response;
   }
 
@@ -620,13 +636,13 @@ class ApiService {
 
 
   async getTemplateSchema(templateName: string): Promise<TemplateSchema> {
-      const safeName = templateName.replace('.j2', ''); 
-      const response = await this.request<ApiResponse<TemplateSchema>>(
-        `/api/documents/templates/${encodeURIComponent(safeName)}/schema`
-      );
-      if (!response.success || !response.data) throw new Error('Failed to fetch template schema');
-      return response.data;
-    }
+    const safeName = templateName.replace('.j2', '');
+    const response = await this.request<ApiResponse<TemplateSchema>>(
+      `/api/documents/templates/${encodeURIComponent(safeName)}/schema`
+    );
+    if (!response.success || !response.data) throw new Error('Failed to fetch template schema');
+    return response.data;
+  }
 
   async downloadDocument(id: string): Promise<void> {
     const token = this.getAuthToken();
@@ -715,7 +731,7 @@ class ApiService {
   async uploadMatterDocument(matterId: string, file: File): Promise<MatterDocument> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('title', file.name); 
+    formData.append('title', file.name);
     const response = await this.request<ApiResponse<MatterDocument>>(
       `/api/lawyer/matter/${matterId}/documents`,
       { method: 'POST', body: formData }
@@ -739,7 +755,7 @@ class ApiService {
       id: event.id,
       title: event.title,
       notes: event.notes,
-      day: new Date(event.dueDate).getDate().toString().padStart(2, '0'), 
+      day: new Date(event.dueDate).getDate().toString().padStart(2, '0'),
       month: new Date(event.dueDate).toLocaleString('default', { month: 'short' }).toUpperCase(),
       urgency: 'normal',
       done: event.completed,
@@ -802,7 +818,7 @@ class ApiService {
     if (!response.success) throw new Error('Failed to trigger memory regeneration');
   }
 
-    async getUpcomingDeadlines(daysAhead: number = 30): Promise<any[]> {
+  async getUpcomingDeadlines(daysAhead: number = 30): Promise<any[]> {
     const response = await this.request<ApiResponse<any[]>>(
       `/api/lawyer/deadlines?daysAhead=${daysAhead}`
     );

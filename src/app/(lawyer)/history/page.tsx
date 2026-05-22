@@ -92,7 +92,7 @@ function MatterHistoryTab() {
     return (
       <div className="space-y-3 p-1">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex gap-4 p-4 rounded-xl border border-border/60 bg-card">
+          <div key={i} className="flex gap-4 p-4 rounded-xl border border-border/80 bg-white/90 dark:bg-zinc-900/90 shadow-sm">
             <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-2/3" />
@@ -114,7 +114,7 @@ function MatterHistoryTab() {
             placeholder="Search matters or case numbers…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9"
+            className="pl-9 h-10 bg-white dark:bg-zinc-900/95 border-border/80 shadow-sm"
           />
         </div>
         <div className="flex gap-2 shrink-0">
@@ -124,10 +124,10 @@ function MatterHistoryTab() {
               type="button"
               onClick={() => setStageFilter(stage)}
               className={cn(
-                "px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors",
+                "px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors shadow-sm",
                 stageFilter === stage
                   ? "bg-foreground text-background border-foreground"
-                  : "bg-card text-muted-foreground border-border hover:bg-muted"
+                  : "bg-white dark:bg-zinc-900/90 text-muted-foreground border-border hover:bg-zinc-50 dark:hover:bg-zinc-800"
               )}
             >
               {stage === "ALL" ? "All" : stageMeta[stage]?.label ?? stage}
@@ -153,7 +153,7 @@ function MatterHistoryTab() {
                 key={matter.id}
                 type="button"
                 onClick={() => router.push(`/assistant/matter/${matter.id}`)}
-                className="group w-full flex items-start gap-4 p-4 rounded-xl border border-border/60 bg-card hover:border-border hover:shadow-sm transition-all duration-200 text-left"
+                className="group w-full flex items-start gap-4 p-4 rounded-xl border border-border/80 bg-white/95 dark:bg-zinc-900/95 hover:bg-white dark:hover:bg-zinc-900 hover:border-primary/30 hover:shadow-md shadow-[0_2px_8px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15)] transition-all duration-200 text-left"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
                   <Scale className="h-5 w-5 text-muted-foreground" />
@@ -220,7 +220,7 @@ function ChatHistoryTab() {
     return (
       <div className="space-y-3 p-1">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex gap-4 p-4 rounded-xl border border-border/60 bg-card">
+          <div key={i} className="flex gap-4 p-4 rounded-xl border border-border/80 bg-white/90 dark:bg-zinc-900/90 shadow-sm">
             <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-3/4" />
@@ -241,7 +241,7 @@ function ChatHistoryTab() {
           placeholder="Search conversations…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 h-9"
+          className="pl-9 h-10 bg-white dark:bg-zinc-900/95 border-border/80 shadow-sm"
         />
       </div>
 
@@ -258,7 +258,7 @@ function ChatHistoryTab() {
               key={conv.id}
               type="button"
               onClick={() => router.push(`/assistant/chat/${conv.id}`)}
-              className="group w-full flex items-start gap-4 p-4 rounded-xl border border-border/60 bg-card hover:border-border hover:shadow-sm transition-all duration-200 text-left"
+              className="group w-full flex items-start gap-4 p-4 rounded-xl border border-border/80 bg-white/95 dark:bg-zinc-900/95 hover:bg-white dark:hover:bg-zinc-900 hover:border-primary/30 hover:shadow-md shadow-[0_2px_8px_rgba(0,0,0,0.02)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.15)] transition-all duration-200 text-left"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 {conv.matterId ? <MessageSquareShare className="h-5 w-5" /> : <MessageSquareMore className="h-5 w-5" />}
@@ -291,7 +291,7 @@ function ChatHistoryTab() {
 //  Empty State 
 function EmptyState({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center rounded-xl border-2 border-dashed border-border/60 bg-muted/10">
+    <div className="flex flex-col items-center justify-center py-16 text-center rounded-xl border border-dashed border-border bg-white/50 dark:bg-zinc-900/40 backdrop-blur-sm shadow-sm">
       <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
         <Icon className="h-6 w-6 text-muted-foreground" />
       </div>
@@ -304,22 +304,22 @@ function EmptyState({ icon: Icon, title, description }: { icon: React.ElementTyp
 //  Page 
 export default function HistoryPage() {
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="max-w-4xl mx-auto px-6 py-6 space-y-6">
+    <div className="h-full w-full overflow-y-auto">
+      <div className="max-w-4xl mx-auto px-6 py-6 space-y-6 pb-20">
 
         {/* Tab view */}
         <Tabs defaultValue="matters" className="space-y-4">
-          <TabsList className="bg-muted/50 p-1 rounded-xl h-10">
+          <TabsList className="bg-zinc-100/90 dark:bg-zinc-950/90 border border-zinc-200/80 dark:border-zinc-800/80 p-1 rounded-xl h-11 shadow-sm backdrop-blur-md">
             <TabsTrigger
               value="matters"
-              className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+              className="rounded-lg text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all px-4 py-1.5"
             >
               <Scale className="h-4 w-4 mr-2" />
               Matter History
             </TabsTrigger>
             <TabsTrigger
               value="chats"
-              className="rounded-lg text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+              className="rounded-lg text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all px-4 py-1.5"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               Chat History

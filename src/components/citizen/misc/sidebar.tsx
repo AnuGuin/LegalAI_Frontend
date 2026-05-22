@@ -27,11 +27,13 @@ interface SidebarProps {
 }
 
 export function Sidebar({ children, open, setOpen, className }: SidebarProps) {
+  const isBorderless = className?.includes("border-r-0");
   return (
     <SidebarContext.Provider value={{ open, setOpen }}>
       <motion.div
         className={cn(
-          "relative flex h-full w-fit flex-col border-r border-border",
+          "relative flex h-full w-fit flex-col",
+          !isBorderless && "border-r border-border",
           className
         )}
         initial={false}

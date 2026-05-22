@@ -3,14 +3,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
+import { HaloDivider } from "@/components/landing/halo-divider";
 import { Features, Pricing, CallToAction } from "@/components/landing/sections";
 import { Footer } from "@/components/landing/footer";
 import { LoaderOne } from "@/components/ui/loader";
-import { BackgroundBeams } from "@/components/ui/background-beams";
 import { usePageTransition } from "@/hooks/use-page-transition";
 import FAQsTwo from "@/components/landing/faq";
 
- 
 export default function LandingPage() {
   const { navigate, isNavigating } = usePageTransition();
 
@@ -36,32 +35,34 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
 
-      <div className="fixed inset-0 z-0 w-full h-full pointer-events-none">
-          <BackgroundBeams/>
-      </div>
-
       <motion.div
-        animate={{ 
+        animate={{
           opacity: isNavigating ? 0 : 1,
-          scale: isNavigating ? 0.98 : 1 
+          scale: isNavigating ? 0.98 : 1
         }}
         transition={{ duration: 0.3 }}
         className="relative z-10 min-h-screen bg-transparent pt-16 -mt-16 scroll-smooth"
       >
         <Navbar animate />
         <main className="scroll-container">
-          <section id="home">
-            <Hero/>
+          <section id="home" className="border-0 border-none outline-none">
+            <Hero />
           </section>
-          <section id="features" className="mt-16">
+
+          <HaloDivider />
+
+          <div className="mx-4 rounded-t-[32px] md:rounded-t-[40px] overflow-hidden">
             <Features />
-          </section>
-          <section id="faq" className="-mt-12">
+          </div>
+
+          <div className="mx-4 rounded-t-[32px] md:rounded-t-[40px] overflow-hidden mt-12">
             <FAQsTwo />
-          </section>
-          <section id="pricing">
+          </div>
+
+          <div className="mx-4 rounded-t-[32px] md:rounded-t-[40px] overflow-hidden mt-12">
             <Pricing />
-          </section>
+          </div>
+
           <section id="cta">
             <CallToAction />
           </section>

@@ -23,26 +23,26 @@ interface NavItem {
 }
 
 const badgeStyles: Record<string, string> = {
-  default: "bg-[#1A3A5C] text-white",
-  amber:   "bg-[#BA7517] text-white",
-  red:     "bg-[#A32D2D] text-white",
+  default: "bg-primary text-primary-foreground",
+  amber:   "bg-amber-600 dark:bg-amber-500/20 text-white dark:text-amber-400 border border-transparent dark:border-amber-500/30",
+  red:     "bg-destructive text-destructive-foreground",
 }
 
 export function NavMain({
   label,
   items,
-}: {
+}:{
   label: string
   items: NavItem[]
 }) {
   const pathname = usePathname()
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel className="text-xs font-medium tracking-widest uppercase text-sidebar-foreground/40 whitespace-nowrap overflow-hidden transition-all duration-300">
+    <SidebarGroup className="py-1">
+      <SidebarGroupLabel className="text-[10px] h-6 font-semibold tracking-widest uppercase text-sidebar-foreground/40 whitespace-nowrap overflow-hidden transition-all duration-300">
         {label}
       </SidebarGroupLabel>
-      <SidebarMenu>
+      <SidebarMenu className="gap-1.5">
         {items.map((item) => {
           const active = item.isActive ?? pathname === item.url
           return (
@@ -51,18 +51,19 @@ export function NavMain({
                 asChild
                 isActive={active}
                 tooltip={item.title}
+                size="sm"
                 className={cn(
-                  "text-sm font-medium transition-colors",
+                  "text-[13px] font-medium transition-colors",
                   active
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-sidebar-foreground/70 hover:text-sidebar-foreground"
                 )}
               >
-                <Link href={item.url} className="flex items-center gap-2.5 group-data-[collapsible=icon]:!gap-0 overflow-hidden whitespace-nowrap">
+                <Link href={item.url} className="flex items-center gap-2 group-data-[collapsible=icon]:!gap-0 overflow-hidden whitespace-nowrap">
                   {item.icon && (
                     <item.icon
                       className={cn(
-                        "h-5 w-5 shrink-0",
+                        "h-4 w-4 shrink-0",
                         active ? "opacity-100" : "opacity-60"
                       )}
                     />
@@ -71,7 +72,7 @@ export function NavMain({
                   {item.badge && (
                     <span
                       className={cn(
-                        "ml-auto rounded-full px-2 py-0.5 text-xs font-semibold leading-none whitespace-nowrap transition-all duration-300 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden",
+                        "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none whitespace-nowrap transition-all duration-300 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:hidden",
                         badgeStyles[item.badgeVariant ?? "default"]
                       )}
                     >

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import {
-  Montserrat,
-  Playfair_Display,
+  Outfit,
+  Inter,
   Source_Code_Pro,
   Instrument_Serif,
 } from "next/font/google";
@@ -12,18 +12,18 @@ import { UserProvider } from "@/context/user-context";
 import { Toaster } from "@/components/ui/sonner";
 import { HeroUIProvider } from "@heroui/system";
 
-const montserrat = Montserrat({
-  variable: "--font-sans",
+const outfit = Outfit({
+  variable: "--font-display",
   subsets: ["latin"],
   display: "swap",
   fallback: ["system-ui", "arial"],
 });
 
-const playfairDisplay = Playfair_Display({
-  variable: "--font-serif",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
-  fallback: ["Georgia", "serif"],
+  fallback: ["system-ui", "arial"],
 });
 
 const sourceCodePro = Source_Code_Pro({
@@ -58,7 +58,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="metallic-scrollbar">
-      <body className={`${montserrat.variable} ${playfairDisplay.variable} ${sourceCodePro.variable} ${instrumentSerif.variable} antialiased metallic-scrollbar`} >
+      <body className={`${inter.variable} ${outfit.variable} ${sourceCodePro.variable} ${instrumentSerif.variable} antialiased metallic-scrollbar`} >
         <HeroUIProvider>
           <ThemeProvider
             attribute="class"

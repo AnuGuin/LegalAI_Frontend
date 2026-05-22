@@ -129,6 +129,14 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
   })
 }
 
+const isSpecificPage = (pathname: string) => {
+  const chatMatch = pathname.match(/^\/assistant\/chat\/([^/]+)$/)
+  const isChat = chatMatch && chatMatch[1] && chatMatch[1] !== 'new'
+  const matterMatch = pathname.match(/^\/assistant\/matter\/([^/]+)$/)
+  const isMatter = matterMatch && matterMatch[1]
+  return !!(isChat || isMatter)
+}
+
 export function DashboardHeader({ onCreateMatter }: { onCreateMatter?: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -136,6 +144,7 @@ export function DashboardHeader({ onCreateMatter }: { onCreateMatter?: () => voi
   const [matterName, setMatterName] = React.useState<string | null>(null)
   const [isDeleting, setIsDeleting] = React.useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
+  const isSpecific = isSpecificPage(pathname)
 
   const chatMatch = pathname.match(/\/assistant\/chat\/([^/]+)$/)
   const isChat = chatMatch && chatMatch[1] && chatMatch[1] !== 'new'
@@ -176,7 +185,10 @@ export function DashboardHeader({ onCreateMatter }: { onCreateMatter?: () => voi
   }, [pathname, isChat, chatId])
 
   return (
-    <header className={`sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 bg-background backdrop-blur px-4 transition-all ${isScrolled ? "border-b border-border/60" : ""}`}>
+    <header className={isSpecific 
+      ? `sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 bg-background backdrop-blur px-4 transition-all ${isScrolled ? "border-b border-border/60" : ""}`
+      : `sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 bg-transparent backdrop-blur-md px-4 transition-all border-b border-border/10 ${isScrolled ? "border-border/40" : "border-transparent"}`
+    }>
       <Breadcrumb>
         <BreadcrumbList>
           {generateBreadcrumbs(pathname, matterName)}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import TocDialog from '@/components/docs/terms/toc-dialog'
 import PrivacyDialog from '@/components/docs/terms/privacy-dialog'
 import CookiePolicyDialog from '@/components/docs/terms/cookie-dialog'
@@ -14,89 +15,121 @@ export function Footer() {
   const [isContactOpen, setIsContactOpen] = useState(false)
 
   return (
-    <footer className= "bg-slate-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-4 gap-8">
-          <div className="col-span-2">
-            <h3 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-white">LegalAI</h3>
-            <p className=" text-zinc-900 dark:text-foreground mb-4 max-w-md">
-              Transforming legal issues with AI-powered solutions. Simplify your legal queries and streamline your workflow.
-            </p>
-            <div className="flex space-x-4">
-              <a href="#" className=" text-zinc-900 dark:text-zinc-300 hover:text-accent transition-colors">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
-                </svg>
-              </a>
-              <a href="#" className=" text-zinc-900 dark:text-zinc-300 hover:text-accent transition-colors">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                </svg>
-              </a>
+    <footer className="bg-background dark:bg-[rgb(3,2,13)] pt-24 pb-8 px-4 sm:px-6 lg:px-8 border-t border-zinc-200 dark:border-zinc-900 relative overflow-hidden transition-colors duration-300">
+      <div className="max-w-7xl mx-auto relative z-10">
+
+        <div className="flex flex-col lg:flex-row justify-between items-start gap-12 mb-20">
+          <div className="max-w-xl">
+            <h2 className="text-2xl md:text-3xl font-display font-medium text-zinc-900 dark:text-zinc-100 leading-snug tracking-tight">
+              Fusing deep technology and domain legal expertise to build sovereign legal AI systems.
+            </h2>
+          </div>
+
+          <div className="w-full lg:w-auto shrink-0">
+            <div className="relative flex items-center bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 w-full sm:w-[380px]">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="bg-transparent border-0 outline-none text-sm text-zinc-900 dark:text-white w-full pr-12 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-0"
+              />
+              <button
+                aria-label="Subscribe to newsletter"
+                className="absolute right-1.5 w-9 h-9 rounded-lg bg-zinc-900 dark:bg-zinc-800 hover:bg-zinc-800 dark:hover:bg-zinc-700 text-white dark:text-zinc-200 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
+            <p className="text-[9px] font-mono tracking-wider text-zinc-400 dark:text-zinc-600 mt-3 uppercase">
+              BY SUBSCRIBING YOU AGREE TO OUR TERMS.
+            </p>
           </div>
-          
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 lg:gap-16 mb-20">
           <div>
-            <h4 className="font-semibold mb-4  text-zinc-900 dark:text-white">Product</h4>
-            <ul className="space-y-2">
-              <li><a href="#features" className=" text-zinc-700 dark:text-slate-300 hover:text-accent transition-colors">Features</a></li>
-              <li><a href="#pricing" className=" text-zinc-700 dark:text-slate-300 hover:text-accent transition-colors">Pricing</a></li>
-              <li><a href="#" className=" text-zinc-700 dark:text-slate-300 hover:text-accent transition-colors">Documentation</a></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-semibold mb-4  text-zinc-900 dark:text-white">Company</h4>
-            <ul className="space-y-2">
+            <h4 className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-300 tracking-wider uppercase mb-5">Links</h4>
+            <ul className="space-y-3">
+              <li><a href="#home" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">Home</a></li>
               <li>
-                <Link href="/about" target ="_blank"  className=" text-zinc-700 dark:text-slate-300 hover:text-accent transition-colors">
+                <Link href="/about" target="_blank" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
                   About
                 </Link>
               </li>
               <li>
-                <a 
-                  href="#contact" 
+                <a
+                  href="#contact"
                   onClick={(e) => { e.preventDefault(); setIsContactOpen(true); }}
-                  className=" text-zinc-700 dark:text-slate-300 hover:text-accent transition-colors"
+                  className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
-                  Contact
+                  Contact us
                 </a>
               </li>
             </ul>
           </div>
-        </div>
-        
-        <div className="border-t border-slate-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-muted-foreground text-sm">
-            © 2025 LegalAI. All rights reserved.
-          </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a 
-              href="#privacy" 
-              onClick={(e) => { e.preventDefault(); setIsPrivacyOpen(true); }}
-              className="text-muted-foreground hover:text-accent text-sm transition-colors"
-            >
-              Privacy Policy
-            </a>
-            <a 
-              href="#terms" 
-              onClick={(e) => { e.preventDefault(); setIsTocOpen(true); }} 
-              className="text-muted-foreground hover:text-accent text-sm transition-colors">
-              Terms of Service
-            </a>
-            <a 
-              href="#cookies" 
-              onClick={(e) => { e.preventDefault(); setIsCookieOpen(true); }}
-              className="text-muted-foreground hover:text-accent text-sm transition-colors"
-            >
-              Cookie Policy
-            </a>
+
+          <div>
+            <h4 className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-300 tracking-wider uppercase mb-5">Platform</h4>
+            <ul className="space-y-3">
+              <li><a href="#features" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">Our Platform</a></li>
+              <li><a href="#pricing" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">Why LegalAI?</a></li>
+            </ul>
           </div>
-          <TocDialog open={isTocOpen} onOpenChange={setIsTocOpen} />
-          <PrivacyDialog open={isPrivacyOpen} onOpenChange={setIsPrivacyOpen} />
-          <CookiePolicyDialog open={isCookieOpen} onOpenChange={setIsCookieOpen} />
-          <ContactUsModal open={isContactOpen} onOpenChange={setIsContactOpen} />
+
+          <div>
+            <h4 className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-300 tracking-wider uppercase mb-5">Resources</h4>
+            <ul className="space-y-3">
+              <li><a href="#faq" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">FAQ</a></li>
+              <li><a href="#" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">Research</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-300 tracking-wider uppercase mb-5">Socials</h4>
+            <ul className="space-y-3">
+              <li><a href="#" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">LinkedIn</a></li>
+              <li><a href="#" className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">X</a></li>
+            </ul>
+          </div>
         </div>
+
+        <div className="border-t border-zinc-200 dark:border-zinc-900/80 pt-8" />
+
+        <div className="flex flex-col sm:flex-row justify-between items-center text-[10px] font-mono tracking-widest text-zinc-400 dark:text-zinc-600 gap-4 uppercase mb-16">
+          <div>© COPYRIGHT {new Date().getFullYear()} LEGALAI.SOFTWARE</div>
+          <div className="flex flex-wrap justify-center gap-6">
+            <button
+              onClick={() => setIsTocOpen(true)}
+              className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+            >
+              TERMS OF SERVICE
+            </button>
+            <button
+              onClick={() => setIsPrivacyOpen(true)}
+              className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+            >
+              PRIVACY POLICY
+            </button>
+            <button
+              onClick={() => setIsCookieOpen(true)}
+              className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+            >
+              COOKIE POLICY
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-8 select-none pointer-events-none text-center">
+          <h1 className="text-[15vw] font-black tracking-widest leading-none text-zinc-200 dark:text-zinc-900 uppercase font-display">
+            LEGALAI
+          </h1>
+        </div>
+
+        {/* Dialogs */}
+        <TocDialog open={isTocOpen} onOpenChange={setIsTocOpen} />
+        <PrivacyDialog open={isPrivacyOpen} onOpenChange={setIsPrivacyOpen} />
+        <CookiePolicyDialog open={isCookieOpen} onOpenChange={setIsCookieOpen} />
+        <ContactUsModal open={isContactOpen} onOpenChange={setIsContactOpen} />
+
       </div>
     </footer>
   )

@@ -17,6 +17,7 @@ import {
 import { TranslateModal } from "../chat/translate-modal";
 import { DocumentGenerationModal } from "../chat/document-generation-modal";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 
 interface Tool {
     id: string;
@@ -42,6 +43,7 @@ interface AI_InputProps {
     inputMinHeight?: number;
     triggerDocModal?: boolean;
     onTriggerDocModal?: () => void;
+    hasActiveConversation?: boolean;
 }
 
 const tools: Tool[] = [
@@ -89,10 +91,12 @@ const ALLOWED_FILE_TYPES = [
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, mode = 'chat', disabled = false, showModeIndicator = true, wrapperClassName, inputMinHeight = 52, triggerDocModal, onTriggerDocModal }: AI_InputProps) {
+export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, mode = 'chat', disabled = false, showModeIndicator = true, wrapperClassName, inputMinHeight = 52, triggerDocModal, onTriggerDocModal, hasActiveConversation = false }: AI_InputProps) {
     const pathname = usePathname();
     const isLawyerModule = pathname?.startsWith('/dashboard') || pathname?.startsWith('/assistant');
     const [value, setValue] = useState("");
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === "dark";
     const { textareaRef, adjustHeight } = useAutoResizeTextarea({
         minHeight: inputMinHeight,
         maxHeight: 200,
@@ -274,11 +278,36 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
     return (
         <div className="w-full py-2 sm:py-4 overflow-visible">
             <div className={cn("relative w-full overflow-visible", wrapperClassName ?? "max-w-2xl mx-auto px-2 sm:px-0")}>
+                {/* Agentic Mode Glowing Gradient Background around the Input Box */}
+                {mode === 'agentic' && !hasActiveConversation && (
+                    <div
+                        className={cn(
+                            "hidden sm:block absolute -inset-2.5 z-0 blur-2xl opacity-60 rounded-[36px] transition-all duration-700 ease-in-out pointer-events-none",
+                            isFocused ? "opacity-90 blur-3xl scale-[1.04]" : ""
+                        )}
+                        style={{
+                            background: isDark
+                              ? `radial-gradient(ellipse 120% 80% at 75% 20%, rgba(255, 20, 147, 0.28), transparent 55%),
+                                 radial-gradient(ellipse 100% 60% at 25% 15%, rgba(0, 255, 255, 0.24), transparent 60%),
+                                 radial-gradient(ellipse 90% 70% at 50% 10%, rgba(138, 43, 226, 0.32), transparent 65%),
+                                 radial-gradient(ellipse 110% 50% at 85% 35%, rgba(255, 215, 0, 0.16), transparent 45%)`
+                              : `radial-gradient(ellipse 120% 80% at 75% 20%, rgba(59, 130, 246, 0.24), transparent 55%),
+                                 radial-gradient(ellipse 100% 60% at 25% 15%, rgba(14, 165, 233, 0.28), transparent 60%),
+                                 radial-gradient(ellipse 90% 70% at 50% 10%, rgba(56, 189, 248, 0.22), transparent 65%),
+                                 radial-gradient(ellipse 110% 50% at 85% 35%, rgba(37, 99, 235, 0.18), transparent 45%)`,
+                        }}
+                    />
+                )}
                 {/* Main container with extension for doc upload */}
                 <div className={cn(
-                    "relative ring-1 ring-black/10 dark:ring-white/10 transition-all duration-300 overflow-visible bg-background dark:bg-input/30 shadow-[0_4px_14px_rgba(0,0,0,0.05)] dark:shadow-none",
-                    uploadedFiles.length > 0 ? "rounded-3xl" : "rounded-[28px] sm:rounded-[32px]",
-                    isFocused && "ring-black/20 dark:ring-white/20",
+                    "relative z-10 transition-all duration-300 overflow-visible",
+                    hasActiveConversation
+                      ? "bg-transparent ring-0 border-none shadow-none"
+                      : cn(
+                          uploadedFiles.length > 0 ? "rounded-3xl" : "rounded-[28px] sm:rounded-[32px]",
+                          "bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_1px_4px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35),0_1px_4px_rgb(0,0,0,0.15)]",
+                          isFocused && "ring-1 ring-black/15 dark:ring-white/15 border-black/15 dark:border-white/15"
+                        ),
                     disabled && "opacity-50 cursor-not-allowed"
                 )}>
                     <div
@@ -307,12 +336,12 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                     onClick={() => !disabled && fileInputRef.current?.click()}
                                     disabled={disabled}
                                     className={cn(
-                                        "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors relative flex items-center justify-center",
-                                        "bg-muted text-muted-foreground/80 hover:bg-muted/80",
+                                        "rounded-full p-2.5 transition-colors relative flex items-center justify-center",
+                                        "bg-black/5 dark:bg-white/5 text-foreground/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10",
                                         disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                                     )}
                                 >
-                                    <Paperclip className="w-5 h-5 text-inherit" />
+                                    <Paperclip className="w-4 h-4 text-inherit" />
                                     {uploadedFiles.length > 0 && (
                                         <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
                                             {uploadedFiles.length}
@@ -321,48 +350,45 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                 </button>
                             )}
                             {mode === 'chat' && (
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        type="button"
-                                        onClick={() => !disabled && fileInputRef.current?.click()}
-                                        disabled={disabled}
-                                        className={cn(
-                                            "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors relative flex items-center justify-center",
-                                            "bg-muted text-muted-foreground/80 hover:bg-muted/80",
-                                            disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                                        )}
-                                    >
-                                        <Paperclip className="w-5 h-5 text-inherit" />
-                                        {uploadedFiles.length > 0 && (
-                                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-                                                {uploadedFiles.length}
-                                            </span>
-                                        )}
-                                    </button>
+                                <div className="flex items-center gap-1.5">
+                                    {/* Pill-shaped tools button matching agentic aesthetic */}
                                     <DropdownMenu onOpenChange={setShowTools}>
                                         <DropdownMenuTrigger asChild disabled={disabled}>
                                             <button
                                                 type="button"
                                                 disabled={disabled}
                                                 className={cn(
-                                                    "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors",
+                                                    "rounded-full transition-all flex items-center gap-1.5 px-3 py-2 border h-9",
                                                     selectedTool || showTools
-                                                        ? "bg-primary/80 text-primary-foreground dark:bg-primary/80"
-                                                        : "bg-muted text-muted-foreground/80 hover:bg-muted/80",
+                                                        ? "bg-primary/80 border-primary/50 text-primary-foreground"
+                                                        : "bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-foreground/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10",
                                                     disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                                                 )}
                                             >
                                                 <motion.div
-                                                    animate={{ rotate: showTools ? 180 : 0, scale: showTools || selectedTool ? 1.1 : 1 }}
+                                                    animate={{ rotate: showTools ? 180 : 0, scale: showTools || selectedTool ? 1.05 : 1 }}
                                                     transition={{ type: "spring", stiffness: 260, damping: 25 }}
+                                                    className="flex items-center justify-center"
                                                 >
                                                     {selectedTool ? selectedTool.icon : (
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("w-5 h-5", showTools ? "text-primary-foreground" : "text-inherit")}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0">
                                                             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                             <path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5" />
                                                         </svg>
                                                     )}
                                                 </motion.div>
+                                                <AnimatePresence>
+                                                    <motion.span
+                                                        key={selectedTool?.label ?? 'tools'}
+                                                        initial={{ opacity: 0, width: 0 }}
+                                                        animate={{ opacity: 1, width: 'auto' }}
+                                                        exit={{ opacity: 0, width: 0 }}
+                                                        transition={{ duration: 0.15 }}
+                                                        className="text-xs font-medium whitespace-nowrap overflow-hidden"
+                                                    >
+                                                        {selectedTool ? selectedTool.label : 'Tools'}
+                                                    </motion.span>
+                                                </AnimatePresence>
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-48 p-2 backdrop-blur-sm border border-border/60 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-popover">
@@ -416,11 +442,11 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                             exit={{ scale: 0, opacity: 0 }}
                                             transition={{ duration: 0.2, type: "spring", stiffness: 260, damping: 25 }}
                                             className={cn(
-                                                "w-5 h-5 rounded-full bg-muted hover:bg-muted/70 transition-colors flex items-center justify-center shrink-0",
+                                                "w-5 h-5 rounded-full bg-black/10 dark:bg-white/10 hover:bg-black/15 dark:hover:bg-white/15 transition-colors flex items-center justify-center shrink-0",
                                                 disabled && "cursor-not-allowed opacity-50"
                                             )}
                                         >
-                                            <X className="w-3 h-3 text-muted-foreground" />
+                                            <X className="w-3 h-3 text-foreground/60 dark:text-white/60" />
                                         </motion.button>
                                     )}
                                 </div>
@@ -435,7 +461,7 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                         ? "Ask Nyay Mitra Agent"
                                         : "Ask LegalAI"
                                 }
-                                className="w-full min-h-[52px] sm:min-h-[60px] rounded-none sm:rounded-[32px] sm:rounded-b-none px-5 py-5 bg-transparent dark:bg-transparent border-none text-foreground placeholder:text-foreground/50 resize-none focus-visible:ring-0 leading-relaxed text-base"
+                                className="w-full min-h-[52px] sm:min-h-[60px] rounded-none sm:rounded-[32px] sm:rounded-b-none px-5 py-5 bg-transparent dark:bg-transparent border-0 border-none border-transparent shadow-none text-foreground placeholder:text-foreground/50 resize-none focus-visible:ring-0 focus-visible:border-none focus-visible:ring-offset-0 leading-relaxed text-base"
                                 ref={textareaRef}
                                 disabled={disabled}
                                 onFocus={handleFocus}
@@ -465,7 +491,7 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                     "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors",
                                     (value.trim() || uploadedFiles.length > 0) && !disabled
                                         ? "bg-primary/80 text-primary-foreground cursor-pointer hover:bg-primary/90 dark:bg-primary/80"
-                                        : "bg-muted text-muted-foreground/80 cursor-not-allowed"
+                                        : "bg-muted dark:bg-zinc-800 text-muted-foreground/80 cursor-not-allowed"
                                 )}
                             >
                                 <ArrowRight className="w-5 h-5" />
@@ -480,7 +506,9 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                     <label
                                         className={cn(
                                             "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors relative flex items-center justify-center",
-                                            "bg-muted text-muted-foreground/80 hover:bg-muted/80",
+                                            mode === 'agentic'
+                                                ? "bg-black/5 dark:bg-white/5 text-foreground/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10"
+                                                : "bg-muted text-muted-foreground/80 hover:bg-muted/80",
                                             disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                                         )}
                                         onClick={(e) => {
@@ -559,7 +587,7 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                             <label
                                                 className={cn(
                                                     "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors relative flex items-center justify-center",
-                                                    "bg-muted text-muted-foreground/80 hover:bg-muted/80",
+                                                    "bg-muted dark:bg-zinc-800 text-muted-foreground/80 hover:bg-muted/80 dark:hover:bg-zinc-700/80",
                                                     disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                                                 )}
                                                 onClick={(e) => { if (disabled) e.preventDefault(); }}
@@ -589,7 +617,7 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                                         "rounded-[28px] sm:rounded-[32px] transition-all flex items-center gap-2 px-2 py-1.5 border h-10",
                                                         selectedTool || showTools
                                                             ? "bg-primary/80 border-primary/80 text-primary-foreground dark:bg-primary/80 dark:border-primary/80"
-                                                            : "border-transparent bg-muted text-muted-foreground/80 hover:bg-muted/80",
+                                                            : "border-transparent bg-muted dark:bg-zinc-800 text-muted-foreground/80 hover:bg-muted/80 dark:hover:bg-zinc-700/80",
                                                         disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                                                     )}
                                                 >
@@ -716,7 +744,7 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                                 exit={{ scale: 0, opacity: 0 }}
                                                 transition={{ duration: 0.2, type: "spring", stiffness: 260, damping: 25 }}
                                                 className={cn(
-                                                    "w-6 h-6 rounded-full bg-muted hover:bg-muted/70 transition-colors flex items-center justify-center",
+                                                    "w-6 h-6 rounded-full bg-muted dark:bg-zinc-800 hover:bg-muted/70 dark:hover:bg-zinc-700/70 transition-colors flex items-center justify-center",
                                                     disabled && "cursor-not-allowed opacity-50"
                                                 )}
                                             >
@@ -735,7 +763,7 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                         "rounded-[28px] sm:rounded-[32px] p-2.5 transition-colors",
                                         (value.trim() || uploadedFiles.length > 0) && !disabled
                                             ? "bg-primary/80 text-primary-foreground cursor-pointer hover:bg-primary/90 dark:bg-primary/80"
-                                            : "bg-muted text-muted-foreground/80 cursor-not-allowed"
+                                            : "bg-muted dark:bg-zinc-800 text-muted-foreground/80 cursor-not-allowed"
                                     )}
                                 >
                                     <ArrowRight className="w-5 h-5" />
@@ -754,7 +782,7 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                 transition={{ duration: 0.3, ease: "easeInOut" }}
                                 className="overflow-visible"
                             >
-                                <div className="bg-transparent backdrop-blur-sm rounded-b-2xl overflow-visible">
+                                <div className="bg-transparent rounded-b-3xl overflow-visible">
                                     {/* Separator line */}
                                     <div className="h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent mx-4"></div>
 
@@ -794,7 +822,7 @@ export default function AI_Input({ onSendMessage, onDocumentGenerationRequest, m
                                                         onClick={() => removeFile(file.id)}
                                                         disabled={disabled}
                                                         className={cn(
-                                                            "absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg scale-90 group-hover:scale-100",
+                                                            "absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center opacity-100 scale-100 sm:opacity-0 sm:group-hover:opacity-100 sm:scale-90 sm:group-hover:scale-100 transition-all shadow-lg",
                                                             disabled && "cursor-not-allowed"
                                                         )}
                                                     >

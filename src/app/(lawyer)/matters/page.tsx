@@ -162,7 +162,7 @@ export default function AllMattersPage() {
         <div className="flex items-center justify-end">
           <Button
             onClick={() => setCreateOpen(true)}
-            className="gap-2 bg-[#1A3A5C] hover:bg-[#244d7a] text-white shrink-0"
+            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
           >
             <Plus className="h-4 w-4" />
             New Matter

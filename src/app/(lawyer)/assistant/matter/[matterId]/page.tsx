@@ -702,7 +702,8 @@ function ChatPanel({
              disabled={isThinking} 
              mode="agentic" 
              showModeIndicator={false}
-             wrapperClassName="w-full shadow-lg rounded-[32px] bg-background border border-border/50"
+             hasActiveConversation={true}
+             wrapperClassName="w-full rounded-[32px] bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_1px_4px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35),0_1px_4px_rgb(0,0,0,0.15)] focus-within:ring-1 focus-within:ring-black/15 dark:focus-within:ring-white/15 focus-within:border-black/15 dark:focus-within:border-white/15 transition-all"
            />
            <p className="text-center text-[10px] text-muted-foreground mt-3 font-light">Legal AI can make mistakes. Please verify important information.</p>
         </div>
@@ -711,7 +712,7 @@ function ChatPanel({
   )
 }
 
-//  Right Panel: Memory 
+// Right Panel: Memory 
 function MemoryPanel({ matterId, memory, loading, onClose, onRefresh }: {
   matterId: string; memory: WorkspaceMemory | null; loading: boolean; onClose: () => void; onRefresh: () => void;
 }) {
@@ -913,7 +914,7 @@ function MemoryPanel({ matterId, memory, loading, onClose, onRefresh }: {
   )
 }
 
-// --- Main Workspace Page ---
+//  Main Workspace Page 
 export default function MatterWorkspacePage({ params }: { params: Promise<{ matterId: string }> }) {
   const router = useRouter()
   const { matterId } = use(params)

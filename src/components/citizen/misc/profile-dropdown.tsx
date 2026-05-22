@@ -147,24 +147,22 @@ export default function ProfileDropdown({
                             {menuItems.map((item) => {
                                 if (item.label === "Settings") {
                                     return (
-                                        <DropdownMenuItem key={item.label} className="flex items-center p-2 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent
+                                        <DropdownMenuItem
+                                            key={item.label}
+                                            onSelect={() => {
+                                                setSettingsOpen(true);
+                                                setIsOpen(false);
+                                            }}
+                                            className="flex items-center gap-2 p-2 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent
                                                 hover:bg-accent
                                                 hover:border-border/50 hover:shadow-sm
                                                 focus:bg-accent
-                                                focus:text-accent-foreground w-full">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setSettingsOpen(true);
-                                                    setIsOpen(false);
-                                                }}
-                                                className="flex items-center gap-2 flex-1"
-                                            >
-                                                {item.icon}
-                                                <span className="text-sm font-medium text-foreground tracking-tight leading-tight whitespace-nowrap group-hover:text-foreground transition-colors">
-                                                    {item.label}
-                                                </span>
-                                            </button>
+                                                focus:text-accent-foreground w-full"
+                                        >
+                                            {item.icon}
+                                            <span className="text-sm font-medium text-foreground tracking-tight leading-tight whitespace-nowrap group-hover:text-foreground transition-colors">
+                                                {item.label}
+                                            </span>
                                         </DropdownMenuItem>
                                     );
                                 } else if (item.label === "Themes") {
@@ -222,21 +220,19 @@ export default function ProfileDropdown({
                                     );
                                 } else if (item.label === "Terms & Policies") {
                                     return (
-                                        <DropdownMenuItem key={item.label} className="flex items-center p-2 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent
+                                        <DropdownMenuItem
+                                            key={item.label}
+                                            onSelect={() => setTocOpen(true)}
+                                            className="flex items-center gap-2 p-2 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent
                                                 hover:bg-accent
                                                 hover:border-border/50 hover:shadow-sm
                                                 focus:bg-accent
-                                                focus:text-accent-foreground w-full">
-                                            <button
-                                                type="button"
-                                                onClick={() => setTocOpen(true)}
-                                                className="flex items-center gap-2 flex-1"
-                                            >
-                                                {item.icon}
-                                                <span className="text-sm font-medium text-foreground tracking-tight leading-tight whitespace-nowrap group-hover:text-foreground transition-colors">
-                                                    {item.label}
-                                                </span>
-                                            </button>
+                                                focus:text-accent-foreground w-full"
+                                        >
+                                            {item.icon}
+                                            <span className="text-sm font-medium text-foreground tracking-tight leading-tight whitespace-nowrap group-hover:text-foreground transition-colors">
+                                                {item.label}
+                                            </span>
                                         </DropdownMenuItem>
                                     );
                                 } else {
@@ -278,19 +274,17 @@ export default function ProfileDropdown({
 
                         <DropdownMenuSeparator className="mx-2 bg-gradient-to-r from-transparent via-border to-transparent" />
 
-                        <DropdownMenuItem asChild className="w-full flex items-center gap-2 p-2 rounded-xl cursor-pointer border border-transparent transition-all group
+                        <DropdownMenuItem
+                            onSelect={onSignOut}
+                            className="w-full flex items-center gap-2 p-2 rounded-xl cursor-pointer border border-transparent transition-all group
                                 hover:bg-accent
                                 focus:bg-accent
-                                focus:text-accent-foreground">
-                            <button
-                                type="button"
-                                onClick={onSignOut}
-                            >
-                                <LogOut className="w-4 h-4 text-foreground group-hover:text-red-600/80" />
-                                <span className="text-sm font-medium text-foreground group-hover:text-red-600/80">
-                                    Sign Out
-                                </span>
-                            </button>
+                                focus:text-accent-foreground"
+                        >
+                            <LogOut className="w-4 h-4 text-foreground group-hover:text-red-600/80" />
+                            <span className="text-sm font-medium text-foreground group-hover:text-red-600/80">
+                                Sign Out
+                            </span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </div>

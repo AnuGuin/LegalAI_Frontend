@@ -80,15 +80,15 @@ interface FormData {
 
 
 const PRACTICE_AREAS: { value: PracticeArea; label: string; color: string; bg: string }[] = [
-  { value: "Criminal", label: "Criminal", color: "text-red-700", bg: "bg-red-50 border-red-200" },
-  { value: "Civil", label: "Civil", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" },
-  { value: "Corporate", label: "Corporate", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
-  { value: "Family", label: "Family", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
-  { value: "Property", label: "Property", color: "text-sky-700", bg: "bg-sky-50 border-sky-200" },
-  { value: "Labour", label: "Labour", color: "text-violet-700", bg: "bg-violet-50 border-violet-200" },
-  { value: "Constitutional", label: "Constitutional", color: "text-rose-700", bg: "bg-rose-50 border-rose-200" },
-  { value: "Tax", label: "Tax", color: "text-teal-700", bg: "bg-teal-50 border-teal-200" },
-  { value: "IP", label: "IP", color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200" },
+  { value: "Criminal", label: "Criminal", color: "text-red-700 dark:text-red-400", bg: "bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20" },
+  { value: "Civil", label: "Civil", color: "text-blue-700 dark:text-blue-400", bg: "bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20" },
+  { value: "Corporate", label: "Corporate", color: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20" },
+  { value: "Family", label: "Family", color: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20" },
+  { value: "Property", label: "Property", color: "text-sky-700 dark:text-sky-400", bg: "bg-sky-50 border-sky-200 dark:bg-sky-500/10 dark:border-sky-500/20" },
+  { value: "Labour", label: "Labour", color: "text-violet-700 dark:text-violet-400", bg: "bg-violet-50 border-violet-200 dark:bg-violet-500/10 dark:border-violet-500/20" },
+  { value: "Constitutional", label: "Constitutional", color: "text-rose-700 dark:text-rose-400", bg: "bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20" },
+  { value: "Tax", label: "Tax", color: "text-teal-700 dark:text-teal-400", bg: "bg-teal-50 border-teal-200 dark:bg-teal-500/10 dark:border-teal-500/20" },
+  { value: "IP", label: "IP", color: "text-indigo-700 dark:text-indigo-400", bg: "bg-indigo-50 border-indigo-200 dark:bg-indigo-500/10 dark:bg-indigo-500/20" },
 ]
 
 const COURTS = [
@@ -111,9 +111,9 @@ const COURTS = [
 ]
 
 const PRIORITY_OPTIONS: { value: Priority; label: string; dot: string; active: string }[] = [
-  { value: "low", label: "Low", dot: "bg-emerald-500", active: "border-emerald-400 bg-emerald-50 text-emerald-700" },
-  { value: "medium", label: "Medium", dot: "bg-amber-500", active: "border-amber-400 bg-amber-50 text-amber-700" },
-  { value: "high", label: "High", dot: "bg-red-500", active: "border-red-400 bg-red-50 text-red-700" },
+  { value: "low", label: "Low", dot: "bg-emerald-500", active: "border-emerald-400 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400" },
+  { value: "medium", label: "Medium", dot: "bg-amber-500", active: "border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400" },
+  { value: "high", label: "High", dot: "bg-red-500", active: "border-red-400 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400" },
 ]
 
 const STEPS = [
@@ -177,8 +177,8 @@ function StepBar({ current }: { current: number }) {
               <div
                 className={cn(
                   "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold transition-all",
-                  done && "bg-[#1A3A5C] text-white",
-                  active && "border border-[#1A3A5C] text-[#1A3A5C] bg-transparent",
+                  done && "bg-primary text-primary-foreground",
+                  active && "border border-primary text-primary bg-transparent",
                   !done && !active && "border border-border text-muted-foreground bg-transparent"
                 )}
               >
@@ -198,7 +198,7 @@ function StepBar({ current }: { current: number }) {
               <div
                 className={cn(
                   "mx-4 h-px flex-1 transition-colors",
-                  done ? "bg-[#1A3A5C]/30" : "bg-border/50"
+                  done ? "bg-primary/30" : "bg-border/50"
                 )}
               />
             )}
@@ -217,7 +217,7 @@ function Field({
   error,
   children,
   hint,
-}: {
+}:{
   label: string
   required?: boolean
   error?: string
@@ -262,8 +262,8 @@ function PartyCard({
           <div
             className={cn(
               "flex h-5 w-5 items-center justify-center rounded",
-              isClient && "bg-blue-50 text-blue-600",
-              isOpponent && "bg-rose-50 text-rose-600",
+              isClient && "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400",
+              isOpponent && "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400",
               isOther && "bg-muted text-muted-foreground"
             )}
           >
@@ -671,7 +671,7 @@ export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps
               <button
                 type="button"
                 onClick={addOther}
-                className="flex w-full items-center gap-2 rounded-lg border border-dashed border-border/60 py-2.5 px-4 text-xs text-muted-foreground hover:border-[#1A3A5C]/40 hover:text-[#1A3A5C] transition-colors"
+                className="flex w-full items-center gap-2 rounded-lg border border-dashed border-border/60 py-2.5 px-4 text-xs text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
               >
                 <Plus className="h-3 w-3" />
                 Add another party (co-accused, intervenor, third party…)
@@ -716,8 +716,8 @@ export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps
 
               {/* AI hint */}
               <div className="flex gap-3 rounded-lg border border-border/40 bg-muted/30 px-4 py-3">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#1A3A5C] mt-px">
-                  <Sparkles className="h-3 w-3 text-white" />
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary mt-px">
+                  <Sparkles className="h-3 w-3 text-primary-foreground" />
                 </div>
                 <div>
                   <p className="text-xs font-medium text-foreground">WorkspaceMemory will be generated</p>
@@ -763,7 +763,7 @@ export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps
             {step < 3 ? (
               <Button
                 size="sm"
-                className="h-8 gap-1.5 text-xs bg-[#1A3A5C] hover:bg-[#244d7a] text-white"
+                className="h-8 gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
                 onClick={next}
               >
                 Continue
@@ -772,7 +772,7 @@ export function CreateMatterModal({ open, onOpenChange }: CreateMatterModalProps
             ) : (
               <Button
                 size="sm"
-                className="h-8 gap-1.5 text-xs bg-[#1A3A5C] hover:bg-[#244d7a] text-white min-w-[120px]"
+                className="h-8 gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground min-w-[120px]"
                 onClick={handleSubmit}
                 disabled={loading}
               >

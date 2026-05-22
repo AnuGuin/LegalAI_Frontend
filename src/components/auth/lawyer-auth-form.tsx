@@ -15,6 +15,7 @@ import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth as firebaseAuth } from '@/lib/firebase';
 import { useDebounce } from '@/hooks/use-debounce';
 import { InputOTPForm } from '@/components/ui/otp-page';
+import { useUser } from '@/context/user-context';
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:10000").replace(/\/api$/, '');
 
@@ -56,6 +57,7 @@ interface ProfileData {
 
 export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
   const router = useRouter();
+  const { login } = useUser();
   const [isLogin, setIsLogin] = useState(mode === 'login');
   const [step, setStep] = useState<AuthStep>('FORM');
 
@@ -103,7 +105,6 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
   };
 
 
-  /** Auto-login after email verification (register path) */
   const autoLoginAfterVerify = async () => {
     const response = await fetch(`${API_BASE_URL}/api/lawyer/auth/login`, {
       method: 'POST',
@@ -217,11 +218,11 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
       if (data.success && data.data) {
         localStorage.setItem('authToken', data.data.accessToken);
         localStorage.setItem('refreshToken', data.data.refreshToken);
-        localStorage.setItem('user', JSON.stringify({
+        login({
           name: data.data.lawyer.name,
           email: data.data.lawyer.email,
           userType: 'lawyer',
-        }));
+        });
 
         if (isNewGoogleUser && pendingProfileData) {
           await fetch(`${API_BASE_URL}/api/lawyer/profile`, {
@@ -342,10 +343,10 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
   return (
     <div className="h-screen w-full flex flex-col md:flex-row gap-4 p-4 bg-background">
       {/* Left — Aurora branding panel (fixed) */}
-      <div className="hidden md:flex md:w-1/2 relative overflow-hidden bg-[#060010] rounded-2xl">
+      <div className="hidden md:flex md:w-1/2 relative overflow-hidden bg-[#03020d] rounded-2xl">
         <div className="absolute inset-0">
           <Aurora
-            colorStops={["#060010", "#f0c6a3", "#b36b76"]}
+            colorStops={["#03020d", "#3b4ff8", "#8a2be2"]}
             blend={0.3}
             amplitude={0.5}
             speed={0.4}
@@ -393,7 +394,7 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
               <Button
                 variant="default"
                 onClick={() => router.push('/#home')}
-                className="w-full bg-gradient-to-b from-[#c9a882] to-[#8a6245] text-white/90 font-medium h-11 gap-2 shadow-inner cursor-pointer hover:text-white"
+                className="w-full bg-gradient-to-r from-[#3b4ff8] to-[#8a2be2] text-white/90 font-medium h-11 gap-2 shadow-lg cursor-pointer hover:text-white hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
               >
                 <Home className="h-4 w-4" />
                 Home
@@ -797,7 +798,7 @@ export default function LawyerAuthForm({ mode }: LawyerAuthFormProps) {
 
                 <Button
                   type="submit"
-                  className="w-full h-11 bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
+                  className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-colors"
                   disabled={!phoneVerified || !barNumberVerified}
                 >
                   Continue to Verification
