@@ -3,10 +3,10 @@
 import React, { useEffect, useState, useRef, use, useCallback, startTransition } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
-  Scale, Send, Paperclip, X, FileText, Copy, ThumbsUp, ThumbsDown, RotateCcw,
+  Scale, Send, Paperclip, X, FileText, Copy, ThumbsUp, ThumbsDown, RotateCcw, Sparkles
 } from "lucide-react"
+import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Response as MarkdownResponse } from "@/components/citizen/misc/response"
 import AITextLoading from "@/components/citizen/misc/ai-text-loading"
 import AI_Input from "@/components/citizen/misc/ai-chat"
@@ -154,18 +154,47 @@ function WelcomeScreen({ onPrompt }: { onPrompt: (p: string) => void }) {
     "Research IPC Section 420 case law",
   ]
   return (
-    <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-6">
-      <div className="text-center max-w-sm sm:max-w-2xl w-full">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-primary mb-4 sm:mb-6 font-sans">
-          Law Research 
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 px-2">Powered by Nyay Mitra Agent</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-2 max-w-xs sm:max-w-xl mx-auto">
-          {prompts.map(p => (
-            <button key={p} type="button" onClick={() => onPrompt(p)}
-              className="text-left text-xs sm:text-sm text-muted-foreground border border-border/60 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 bg-card hover:bg-muted/50 hover:text-foreground transition-colors">
+    <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+
+      <div className="text-center max-w-sm sm:max-w-2xl w-full z-10">
+
+        <motion.h1
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="relative text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 sm:mb-6 font-sans"
+        >
+          <span className="absolute -inset-x-12 -top-6 bottom-0 bg-gradient-to-r from-blue-500/5 via-indigo-500/5 to-transparent blur-3xl opacity-30 select-none pointer-events-none rounded-full" />
+          <span className="relative bg-gradient-to-r from-blue-600 via-indigo-500 to-indigo-600 dark:from-blue-400 dark:via-indigo-300 dark:to-indigo-200 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(59,130,246,0.15)]">
+            Law Research
+          </span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="text-sm sm:text-base text-muted-foreground mb-8 px-4 max-w-lg mx-auto leading-relaxed"
+        >
+          Powered by{" "}
+          <span className="font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">
+            Nyay Mitra Agent
+          </span>
+        </motion.p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-2.5 max-w-xs sm:max-w-xl mx-auto">
+          {prompts.map((p, idx) => (
+            <motion.button
+              key={p}
+              type="button"
+              onClick={() => onPrompt(p)}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4 + idx * 0.08 }}
+              className="text-left text-xs sm:text-sm text-muted-foreground border border-border/60 hover:border-indigo-500/30 rounded-lg sm:rounded-xl px-4 py-3 bg-card hover:bg-muted/50 hover:text-foreground shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-[1.01]"
+            >
               {p}
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
@@ -273,10 +302,10 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
     }
 
     const tempId = `temp-${Date.now()}`
-    const userMsg: Msg = { 
-      id: tempId, 
-      role: "user", 
-      content, 
+    const userMsg: Msg = {
+      id: tempId,
+      role: "user",
+      content,
       createdAt: new Date().toISOString(),
       attachments: file ? [file.name] : undefined
     }
@@ -363,7 +392,7 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
             <div ref={messagesEndRef} />
           </div>
         ) : isLoading ? (
-          
+
           <div className="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
             <div className="flex items-start gap-3 justify-end">
               <div className="w-full max-w-[300px] flex flex-col gap-2">

@@ -141,7 +141,7 @@ function SidebarInnerContent({
                   Recents
                 </h3>
               </div>
-              <div className="flex-1 overflow-y-auto overflow-x-hidden sidebar-scrollbar min-h-0 -mr-3 pr-3">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden sidebar-scrollbar min-h-0 pr-1.5">
                 {isLoadingConversations ? (
                   <RecentChatSkeleton />
                 ) : conversations && conversations.length > 0 ? (

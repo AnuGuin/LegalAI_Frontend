@@ -19,6 +19,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { CreateMatterModal } from "@/components/lawyer/dashboard/create-matter-modal"
+import { ArchiveMatterDialog } from "@/components/lawyer/dashboard/archive-matter-dialog"
+import ArchivedMattersModal from "@/components/lawyer/dashboard/archived-matters-modal"
+import { toast } from "sonner"
 
 const stageMeta: Record<string, { label: string; icon: React.ElementType; rowClass: string; badgeClass: string }> = {
   ACTIVE: {
@@ -109,6 +112,8 @@ export default function AllMattersPage() {
   const [sortKey, setSortKey] = React.useState<SortKey>("createdAt")
   const [sortDir, setSortDir] = React.useState<SortDir>("desc")
   const [createOpen, setCreateOpen] = React.useState(false)
+  const [archiveTarget, setArchiveTarget] = React.useState<Matter | null>(null)
+  const [archivedModalOpen, setArchivedModalOpen] = React.useState(false)
 
   React.useEffect(() => {
     apiService.getMatters().then(setMatters).catch(() => {}).finally(() => setLoading(false))
@@ -131,7 +136,7 @@ export default function AllMattersPage() {
         (m.caseNumber ?? "").toLowerCase().includes(search.toLowerCase()) ||
         (m.notes ?? "").toLowerCase().includes(search.toLowerCase()) ||
         (m.practiceArea ?? "").toLowerCase().includes(search.toLowerCase())
-      const matchesStage = stageFilter === "ALL" || m.status === stageFilter
+      const matchesStage = stageFilter === "ALL" ? m.status !== "ARCHIVED" : m.status === stageFilter
       return matchesSearch && matchesStage
     })
 
@@ -159,7 +164,20 @@ export default function AllMattersPage() {
       <div className="max-w-6xl mx-auto px-6 py-6 space-y-6">
 
         {/* Page Actions */}
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setArchivedModalOpen(true)}
+            className="gap-2 shrink-0"
+          >
+            <Archive className="h-4 w-4" />
+            Archived
+            {safeMatters.filter((m) => m.status === "ARCHIVED").length > 0 && (
+              <span className="text-[10px] rounded-full px-1.5 bg-muted-foreground/15">
+                {safeMatters.filter((m) => m.status === "ARCHIVED").length}
+              </span>
+            )}
+          </Button>
           <Button
             onClick={() => setCreateOpen(true)}
             className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
@@ -181,9 +199,11 @@ export default function AllMattersPage() {
             />
           </div>
           <div className="flex gap-2 shrink-0">
-            {["ALL", "ACTIVE", "CLOSED", "ARCHIVED"].map((stage) => {
+            {["ALL", "ACTIVE", "CLOSED"].map((stage) => {
               const label = stage === "ALL" ? "All" : (stageMeta[stage]?.label ?? stage)
-              const count = stage === "ALL" ? safeMatters.length : safeMatters.filter((m) => m.status === stage).length
+              const count = stage === "ALL" 
+                ? safeMatters.filter((m) => m.status !== "ARCHIVED").length 
+                : safeMatters.filter((m) => m.status === stage).length
               return (
                 <button
                   key={stage}
@@ -303,9 +323,23 @@ export default function AllMattersPage() {
                         </Badge>
                       </td>
 
-                      {/* Arrow */}
+                      {/* Actions & Arrow */}
                       <td className="px-4 py-3.5">
-                        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity rounded-lg"
+                              title="Archive Matter"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setArchiveTarget(matter);
+                              }}
+                            >
+                              <Archive className="h-4 w-4" />
+                            </Button>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                        </div>
                       </td>
                     </tr>
                   )
@@ -316,7 +350,7 @@ export default function AllMattersPage() {
             {/* Footer */}
             <div className="px-4 py-2.5 bg-muted/20 border-t border-border/40 flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                Showing {filtered.length} of {matters.length} matters
+                Showing {filtered.length} of {safeMatters.filter((m) => m.status !== "ARCHIVED").length} matters
               </p>
             </div>
           </div>
@@ -325,6 +359,49 @@ export default function AllMattersPage() {
       </div>
 
       <CreateMatterModal open={createOpen} onOpenChange={setCreateOpen} />
+      <ArchiveMatterDialog
+        open={!!archiveTarget}
+        onOpenChange={(open) => {
+          if (!open) setArchiveTarget(null);
+        }}
+        matterTitle={archiveTarget?.title}
+        onConfirm={async () => {
+          if (!archiveTarget) return;
+          try {
+            await apiService.archiveMatter(archiveTarget.id);
+            toast.success("Matter archived successfully", {
+              action: {
+                label: "Undo",
+                onClick: async () => {
+                  try {
+                    await apiService.updateMatter(archiveTarget.id, { status: "ACTIVE" });
+                    toast.success("Matter restored");
+                    const updated = await apiService.getMatters();
+                    setMatters(updated);
+                  } catch (err) {
+                    toast.error("Failed to restore matter");
+                  }
+                }
+              }
+            });
+            const updated = await apiService.getMatters();
+            setMatters(updated);
+          } catch (err) {
+            toast.error("Failed to archive matter");
+            throw err;
+          }
+        }}
+      />
+      <ArchivedMattersModal
+        open={archivedModalOpen}
+        onOpenChange={(open) => {
+          setArchivedModalOpen(open);
+          if (!open) {
+            // Re-fetch matters when closing archived modal in case user restored matters
+            apiService.getMatters().then(setMatters).catch(() => {});
+          }
+        }}
+      />
     </div>
   )
 }

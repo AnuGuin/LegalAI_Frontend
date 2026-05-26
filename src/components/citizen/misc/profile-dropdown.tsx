@@ -73,7 +73,7 @@ export default function ProfileDropdown({
     const [tocOpen, setTocOpen] = React.useState(false);
     const [settingsOpen, setSettingsOpen] = React.useState(false);
     const { theme, setTheme } = useTheme();
-    
+
     const menuItems: MenuItem[] = [
         {
             label: "Settings",
@@ -138,7 +138,7 @@ export default function ProfileDropdown({
                         align={align}
                         sideOffset={sideOffset}
                         alignOffset={alignOffset}
-                        className="z-50 w-56 p-2 backdrop-blur-sm border border-border/60 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-popover
+                        className="z-50 w-56 p-2 backdrop-blur-sm border-0 dark:border-2 dark:border-zinc-500/20 rounded-2xl shadow-[4px_8px_12px_2px_rgba(0,0,0,0.1)] dark:shadow-[4px_8px_12px_2px_rgba(0,0,0,0.2)] bg-popover/80 dark:bg-zinc-900/50
                     data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
                     >
 

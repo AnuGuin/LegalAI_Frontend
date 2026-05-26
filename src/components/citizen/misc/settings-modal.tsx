@@ -47,7 +47,6 @@ export default function SettingsModal({ open, onOpenChange, onSignOut }: Setting
     const [loading, setLoading] = React.useState(false);
     const [tocOpen, setTocOpen] = React.useState(false);
     const [privacyOpen, setPrivacyOpen] = React.useState(false);
-    const { theme, setTheme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {

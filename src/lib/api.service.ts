@@ -17,6 +17,27 @@ interface UserProfile {
   lastLoginAt?: string;
 }
 
+interface LawyerUser {
+  id: string;
+  email: string;
+  name: string;
+  avatar?: string;
+  phone?: string;
+  provider: string;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  barCouncilState?: string;
+  practiceAreas?: string[];
+  yearsOfExperience?: number | null;
+  barNumber?: string;
+  barNumberFormatValid?: boolean;
+  verificationStatus?: 'PENDING' | 'AUTO_VERIFIED' | 'FORMAT_FAILED' | 'MANUALLY_VERIFIED' | 'REJECTED';
+  verifiedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt?: string | null;
+}
+
 interface Message {
   id: string;
   content: string;
@@ -302,6 +323,26 @@ class ApiService {
     const response = await this.request<ApiResponse<UserProfile>>('/api/user/profile');
     if (!response.success || !response.data) throw new Error('Failed to fetch user profile');
     return response.data;
+  }
+
+  async getLawyerProfile(): Promise<LawyerUser> {
+    const response = await this.request<ApiResponse<any>>('/api/lawyer/auth/me');
+    if (!response.success || !response.data) throw new Error('Failed to fetch lawyer profile');
+    return response.data.lawyer || response.data;
+  }
+
+  async updateLawyerProfile(data: Partial<LawyerUser>): Promise<LawyerUser> {
+    const response = await this.request<ApiResponse<any>>(
+      '/api/lawyer/profile',
+      {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      }
+    );
+    if (!response.success || !response.data) {
+      throw new Error('Failed to update lawyer profile');
+    }
+    return response.data.lawyer || response.data;
   }
 
   async updateUserProfile(data: { name?: string; avatar?: string; preferences?: any }): Promise<UserProfile> {
@@ -678,6 +719,26 @@ class ApiService {
     return response.data;
   }
 
+  async archiveMatter(matterId: string): Promise<void> {
+    const response = await this.request<ApiResponse<void>>(
+      `/api/lawyer/matter/${matterId}`,
+      { method: 'DELETE' }
+    );
+    if (!response.success) throw new Error('Failed to archive matter');
+  }
+
+  async updateMatter(matterId: string, data: { title?: string; description?: string; status?: string }): Promise<Matter> {
+    const response = await this.request<ApiResponse<Matter>>(
+      `/api/lawyer/matter/${matterId}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(data)
+      }
+    );
+    if (!response.success || !response.data) throw new Error('Failed to update matter');
+    return response.data;
+  }
+
   async getLawyerConversation(conversationId: string): Promise<any> {
     const response = await this.request<ApiResponse<any>>(`/api/lawyer/chat/conversations/${conversationId}`);
     if (!response.success || !response.data) throw new Error('Failed to fetch conversation');
@@ -837,16 +898,22 @@ class ApiService {
   async getMatters(): Promise<Matter[]> {
     const response = await this.request<ApiResponse<any>>('/api/lawyer/matter');
     if (!response.success || !response.data) return [];
-    if (Array.isArray(response.data)) return response.data;
-    if (response.data.matters && Array.isArray(response.data.matters)) return response.data.matters;
-    if (response.data.data && Array.isArray(response.data.data)) return response.data.data;
-    return [];
+    let raw: any[];
+    if (Array.isArray(response.data)) raw = response.data;
+    else if (response.data.matters && Array.isArray(response.data.matters)) raw = response.data.matters;
+    else if (response.data.data && Array.isArray(response.data.data)) raw = response.data.data;
+    else return [];
+    return raw.map((m: any) => ({
+      ...m,
+      status: m.stage || m.status || 'ACTIVE',
+      stage: m.stage || m.status || 'ACTIVE',
+    }));
   }
 }
 
 export const apiService = new ApiService();
 export type {
-  UserProfile, Conversation, Message, SendMessageResponse, Translation, UserStats,
+  UserProfile, LawyerUser, Conversation, Message, SendMessageResponse, Translation, UserStats,
   Document, TemplateField, TemplateSchema, GenerateDocumentResult,
   Matter, CreateMatterPayload, MatterParty,
 };
