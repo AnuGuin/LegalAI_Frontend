@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useEffect, useState, useRef, use, useCallback, startTransition } from "react"
+import React, { useEffect, useState, useRef, use, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
-  Scale, Send, Paperclip, X, FileText, Copy, ThumbsUp, ThumbsDown, RotateCcw, Sparkles
+  Paperclip, Copy, ThumbsUp, ThumbsDown, RotateCcw,
 } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -46,9 +46,7 @@ function UserBubble({ msg }: { msg: Msg }) {
           )}
           <p className="whitespace-pre-wrap leading-relaxed text-sm">{msg.content}</p>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-1 text-right px-1">
-          {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-        </p>
+
       </div>
     </div>
   )
@@ -219,6 +217,7 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const isAtBottomRef = useRef(true)
   const [isNewConvSelected, setIsNewConvSelected] = useState(false)
+  const [showScrollButton, setShowScrollButton] = useState(false)
 
   const updateUrl = useCallback((id: string) => {
     window.history.replaceState(null, "", `/assistant/chat/${id}`)
@@ -228,11 +227,23 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
   const handleScroll = () => {
     if (!scrollContainerRef.current) return
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current
-    isAtBottomRef.current = Math.abs(scrollHeight - scrollTop - clientHeight) < 60
+    const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 60
+    isAtBottomRef.current = isAtBottom
+    setShowScrollButton(!isAtBottom)
   }
   const scrollToBottom = useCallback((smooth = true) => {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "instant" })
   }, [])
+  const forceScrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    isAtBottomRef.current = true
+    setShowScrollButton(false)
+  }, [])
+
+  useEffect(() => {
+    setShowScrollButton(false)
+    isAtBottomRef.current = true
+  }, [conversationId])
 
   useEffect(() => {
     if (isNewConvSelected) { scrollContainerRef.current && (scrollContainerRef.current.scrollTop = 0); setIsNewConvSelected(false) }
@@ -360,7 +371,7 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
   const hasMessages = messages.length > 0
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 relative z-10 min-w-0 overflow-hidden w-full h-full bg-background">
+    <div className={cn("flex flex-col flex-1 min-h-0 relative z-10 min-w-0 overflow-hidden w-full h-full", isNew ? "bg-transparent" : "bg-background")}>
       {/* Messages area */}
       <div
         ref={scrollContainerRef}
@@ -428,6 +439,16 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
           <p className="text-center text-[10px] text-muted-foreground mt-1 font-light">Legal AI can make mistakes. Please verify important information.</p>
         </div>
       </div>
+
+      {hasMessages && showScrollButton && (
+        <button
+          onClick={forceScrollToBottom}
+          className="absolute bottom-46 left-1/2 -translate-x-1/2 rounded-full bg-background text-muted-foreground hover:text-foreground transition-colors animate-in fade-in zoom-in duration-200 z-20"
+          aria-label="Scroll to bottom"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-circle-arrow-down"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M8 12l4 4" /><path d="M12 8v8" /><path d="M16 12l-4 4" /></svg>
+        </button>
+      )}
     </div>
   )
 }

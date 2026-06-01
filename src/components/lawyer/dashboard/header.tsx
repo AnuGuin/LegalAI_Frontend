@@ -40,12 +40,14 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
     
     return [
       ...newSegments.map((segment, index) => {
-        const href = `/${newSegments.slice(0, index + 1).join('/')}`
+        const rawHref = `/${newSegments.slice(0, index + 1).join('/')}`
+        const href = rawHref === "/assistant" ? "/assistant/chat/new" : rawHref
         const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ')
+        const ariaLabel = rawHref === "/assistant" ? "assistant" : undefined
         return (
           <React.Fragment key={href}>
             <BreadcrumbItem>
-              <BreadcrumbLink href={href} className="text-base">
+              <BreadcrumbLink href={href} className="text-base" aria-label={ariaLabel}>
                 {label}
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -76,12 +78,14 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
     
     return [
       ...newSegments.map((segment, index) => {
-        const href = `/${newSegments.slice(0, index + 1).join('/')}`
+        const rawHref = `/${newSegments.slice(0, index + 1).join('/')}`
+        const href = rawHref === "/assistant" ? "/assistant/chat/new" : rawHref
         const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ')
+        const ariaLabel = rawHref === "/assistant" ? "assistant" : undefined
         return (
           <React.Fragment key={href}>
             <BreadcrumbItem>
-              <BreadcrumbLink href={href} className="text-base">
+              <BreadcrumbLink href={href} className="text-base" aria-label={ariaLabel}>
                 {label}
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -109,8 +113,10 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
 
   return segments.map((segment, index) => {
     const isLast = index === segments.length - 1
-    const href = `/${segments.slice(0, index + 1).join('/')}`
+    const rawHref = `/${segments.slice(0, index + 1).join('/')}`
+    const href = rawHref === "/assistant" ? "/assistant/chat/new" : rawHref
     const label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ')
+    const ariaLabel = rawHref === "/assistant" ? "assistant" : undefined
 
     return (
       <React.Fragment key={href}>
@@ -118,7 +124,7 @@ function generateBreadcrumbs(pathname: string, matterName: string | null) {
           {isLast ? (
             <BreadcrumbPage className="text-base font-medium">{label}</BreadcrumbPage>
           ) : (
-            <BreadcrumbLink href={href} className="text-base">
+            <BreadcrumbLink href={href} className="text-base" aria-label={ariaLabel}>
               {label}
             </BreadcrumbLink>
           )}

@@ -379,6 +379,11 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
       }
     }, [streamingContent, streamingMessageId]);
 
+    useEffect(() => {
+      setShowScrollButton(false);
+      isAtBottomRef.current = true;
+    }, [activeConversation?.id]);
+
     const hasMessages = combinedMessages.length > 0;
 
     return (
@@ -465,7 +470,7 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
           </div>
         )}
 
-        {showScrollButton && (
+        {hasMessages && showScrollButton && (
           <button
             onClick={forceScrollToBottom}
             className="absolute bottom-46  left-1/2 -translate-x-1/2 rounded-full bg-background text-muted-foreground hover:text-foreground transition-colors animate-in fade-in zoom-in duration-200"

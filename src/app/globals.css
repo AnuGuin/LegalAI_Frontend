@@ -374,3 +374,11 @@ canvas {
 .dark .sidebar-scrollbar {
   scrollbar-color: rgba(156, 163, 175, 0.2) transparent;
 }
+
+/* Modal / Dialog / Sheet Dark Mode Contrast Override */
+.dark [role="dialog"],
+.dark [data-slot="sheet-content"] {
+  --background: rgb(15, 12, 38);
+  --popover: rgb(15, 12, 38);
+  --border: rgb(28, 24, 56);
+}

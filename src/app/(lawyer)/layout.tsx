@@ -40,12 +40,12 @@ export default function LawyerDashboardLayout({
                  radial-gradient(ellipse 85% 55% at 45% 53%, rgba(0, 255, 255, 0.14), transparent 55%),
                  radial-gradient(ellipse 75% 50% at 65% 63%, rgba(255, 20, 147, 0.16), transparent 55%),
                  radial-gradient(ellipse 85% 45% at 58% 50%, rgba(255, 215, 0, 0.09), transparent 45%),
-                 #000000`
+                 var(--background)`
               : `radial-gradient(ellipse 100% 70% at 55% 58%, rgba(59, 130, 246, 0.18), transparent 60%),
                  radial-gradient(ellipse 85% 55% at 45% 53%, rgba(14, 165, 233, 0.22), transparent 55%),
                  radial-gradient(ellipse 75% 50% at 65% 63%, rgba(56, 189, 248, 0.18), transparent 55%),
                  radial-gradient(ellipse 85% 45% at 58% 50%, rgba(37, 99, 235, 0.12), transparent 45%),
-                 #ffffff`,
+                 var(--background)`,
           }}
         />
         <div className="relative z-10 flex h-full w-full overflow-hidden flex-1">
