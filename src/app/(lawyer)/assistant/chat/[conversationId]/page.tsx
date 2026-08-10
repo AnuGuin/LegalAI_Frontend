@@ -5,6 +5,20 @@ import { useRouter, useSearchParams } from "next/navigation"
 import {
   Paperclip, Copy, ThumbsUp, ThumbsDown, RotateCcw,
 } from "lucide-react"
+import {
+  MessageScrollerProvider,
+  MessageScroller,
+  MessageScrollerViewport,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerButton,
+} from "@/components/ui/message-scroller"
+import {
+  Attachment,
+  AttachmentContent,
+  AttachmentTitle,
+  AttachmentMedia,
+} from "@/components/ui/attachment"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Response as MarkdownResponse } from "@/components/citizen/misc/response"
@@ -38,9 +52,14 @@ function UserBubble({ msg }: { msg: Msg }) {
           {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-1.5">
               {msg.attachments.map((f, i) => (
-                <div key={i} className="flex items-center gap-1 bg-white/20 rounded px-2 py-0.5 text-xs">
-                  <Paperclip className="h-3 w-3" />{f}
-                </div>
+                <Attachment key={i} size="xs" className="bg-white/15 border-white/10 text-white">
+                  <AttachmentMedia className="bg-white/10 text-white">
+                    <Paperclip className="h-3 w-3" />
+                  </AttachmentMedia>
+                  <AttachmentContent>
+                    <AttachmentTitle className="text-white">{f}</AttachmentTitle>
+                  </AttachmentContent>
+                </Attachment>
               ))}
             </div>
           )}
@@ -213,46 +232,10 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
   const [isSending, setIsSending] = useState(false)
   const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null)
   const { streamingContent, startStreaming } = useStream()
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const isAtBottomRef = useRef(true)
-  const [isNewConvSelected, setIsNewConvSelected] = useState(false)
-  const [showScrollButton, setShowScrollButton] = useState(false)
-
   const updateUrl = useCallback((id: string) => {
     window.history.replaceState(null, "", `/assistant/chat/${id}`)
     setConvId(id)
   }, [])
-
-  const handleScroll = () => {
-    if (!scrollContainerRef.current) return
-    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current
-    const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 60
-    isAtBottomRef.current = isAtBottom
-    setShowScrollButton(!isAtBottom)
-  }
-  const scrollToBottom = useCallback((smooth = true) => {
-    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "instant" })
-  }, [])
-  const forceScrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-    isAtBottomRef.current = true
-    setShowScrollButton(false)
-  }, [])
-
-  useEffect(() => {
-    setShowScrollButton(false)
-    isAtBottomRef.current = true
-  }, [conversationId])
-
-  useEffect(() => {
-    if (isNewConvSelected) { scrollContainerRef.current && (scrollContainerRef.current.scrollTop = 0); setIsNewConvSelected(false) }
-    else if (isAtBottomRef.current) scrollToBottom()
-  }, [messages.length, isNewConvSelected, scrollToBottom])
-
-  useEffect(() => {
-    if (streamingMsgId && isAtBottomRef.current) scrollToBottom(false)
-  }, [streamingContent, streamingMsgId, scrollToBottom])
 
   useEffect(() => {
     if (isNew) { setIsLoading(false); return }
@@ -271,7 +254,6 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
             content: m.content, createdAt: m.createdAt, attachments: m.attachments,
           }))
           setMessages(msgs)
-          setIsNewConvSelected(true)
         }
       })
       .catch(() => toast.error("Could not load conversation"))
@@ -371,84 +353,87 @@ export default function LawyerStandaloneChatPage({ params }: { params: Promise<{
   const hasMessages = messages.length > 0
 
   return (
-    <div className={cn("flex flex-col flex-1 min-h-0 relative z-10 min-w-0 overflow-hidden w-full h-full", isNew ? "bg-transparent" : "bg-background")}>
-      {/* Messages area */}
-      <div
-        ref={scrollContainerRef}
-        onScroll={handleScroll}
-        className={cn(
-          "flex-1 min-h-0 metallic-scrollbar relative transition-all duration-200",
-          hasMessages ? "overflow-y-auto" : "overflow-hidden"
-        )}
-      >
-        {hasMessages ? (
-          <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-8 pb-36 space-y-3 sm:space-y-4">
-            {messages.map((msg, i) => {
-              if (msg.role === "user") return <UserBubble key={msg.id} msg={msg} />
-              return (
-                <AssistantBubble
-                  key={msg.id}
-                  msg={msg}
-                  isStreaming={streamingMsgId === msg.id}
-                  streamContent={streamingContent}
-                  onRegenerate={() => {
-                    for (let j = i - 1; j >= 0; j--) {
-                      if (messages[j]?.role === "user") { sendMessage(messages[j]!.content); break }
-                    }
-                  }}
-                />
-              )
-            })}
-            {isSending && !streamingMsgId && <LoadingMessage />}
-            <div ref={messagesEndRef} />
-          </div>
-        ) : isLoading ? (
+    <MessageScrollerProvider autoScroll defaultScrollPosition="end">
+      <div className={cn("flex flex-col flex-1 min-h-0 relative z-10 min-w-0 overflow-hidden w-full h-full", isNew ? "bg-transparent" : "bg-background")}>
+        {/* Messages area */}
+        <MessageScroller className="flex-1 min-h-0">
+          <MessageScrollerViewport className="metallic-scrollbar relative transition-all duration-200">
+            {hasMessages ? (
+              <MessageScrollerContent className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-8 pb-56 w-full flex flex-col gap-3 sm:gap-4">
+                {messages.map((msg, i) => {
+                  const isUser = msg.role === "user";
+                  return (
+                    <MessageScrollerItem
+                      key={msg.id}
+                      messageId={msg.id}
+                      scrollAnchor={isUser}
+                      className="w-full"
+                    >
+                      {isUser ? (
+                        <UserBubble msg={msg} />
+                      ) : (
+                        <AssistantBubble
+                          msg={msg}
+                          isStreaming={streamingMsgId === msg.id}
+                          streamContent={streamingContent}
+                          onRegenerate={() => {
+                            for (let j = i - 1; j >= 0; j--) {
+                              if (messages[j]?.role === "user") { sendMessage(messages[j]!.content); break }
+                            }
+                          }}
+                        />
+                      )}
+                    </MessageScrollerItem>
+                  )
+                })}
+                {isSending && !streamingMsgId && (
+                  <MessageScrollerItem key="loading" messageId="loading" scrollAnchor={false} className="w-full">
+                    <LoadingMessage />
+                  </MessageScrollerItem>
+                )}
+              </MessageScrollerContent>
+            ) : isLoading ? (
+              <MessageScrollerContent>
+                <div className="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
+                  <div className="flex items-start gap-3 justify-end">
+                    <div className="w-full max-w-[300px] flex flex-col gap-2">
+                      <div className="h-3 w-4/5 rounded-lg bg-muted animate-pulse ml-auto" />
+                      <div className="h-3 w-3/5 rounded-lg bg-muted animate-pulse ml-auto" />
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-full max-w-[900px] flex flex-col gap-2">
+                      <div className="h-3 w-3/5 rounded-lg bg-muted animate-pulse" />
+                      <div className="h-3 w-4/5 rounded-lg bg-muted animate-pulse" />
+                      <div className="h-3 w-3/5 rounded-lg bg-muted animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+              </MessageScrollerContent>
+            ) : (
+              <MessageScrollerContent>
+                <WelcomeScreen onPrompt={(p) => sendMessage(p)} />
+              </MessageScrollerContent>
+            )}
+          </MessageScrollerViewport>
+          <MessageScrollerButton className="z-20 bottom-[180px] data-[direction=end]:bottom-[180px]" />
+        </MessageScroller>
 
-          <div className="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
-            <div className="flex items-start gap-3 justify-end">
-              <div className="w-full max-w-[300px] flex flex-col gap-2">
-                <div className="h-3 w-4/5 rounded-lg bg-muted animate-pulse ml-auto" />
-                <div className="h-3 w-3/5 rounded-lg bg-muted animate-pulse ml-auto" />
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-full max-w-[900px] flex flex-col gap-2">
-                <div className="h-3 w-3/5 rounded-lg bg-muted animate-pulse" />
-                <div className="h-3 w-4/5 rounded-lg bg-muted animate-pulse" />
-                <div className="h-3 w-3/5 rounded-lg bg-muted animate-pulse" />
-              </div>
-            </div>
+        {/* Floating Input Dock */}
+        <div className="absolute bottom-0 left-0 w-full pt-16 pb-6 px-4 z-10 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+          <div className="max-w-3xl mx-auto flex flex-col items-center pointer-events-auto">
+            <AI_Input
+              onSendMessage={sendMessage}
+              disabled={isSending}
+              mode="chat"
+              showModeIndicator={false}
+              hasActiveConversation={true}
+              wrapperClassName="w-full rounded-[32px] bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_1px_4px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35),0_1px_4px_rgb(0,0,0,0.15)] focus-within:ring-1 focus-within:ring-black/15 dark:focus-within:ring-white/15 focus-within:border-black/15 dark:focus-within:border-white/15 transition-all"
+            />
+            <p className="text-center text-[10px] text-muted-foreground mt-1 font-light">Legal AI can make mistakes. Please verify important information.</p>
           </div>
-        ) : (
-          <WelcomeScreen onPrompt={(p) => sendMessage(p)} />
-        )}
-        <div ref={messagesEndRef} className="h-24" />
-      </div>
-
-      {/* Floating Input Dock */}
-      <div className="absolute bottom-0 left-0 w-full pt-16 pb-6 px-4 z-10 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
-        <div className="max-w-3xl mx-auto flex flex-col items-center pointer-events-auto">
-          <AI_Input
-            onSendMessage={sendMessage}
-            disabled={isSending}
-            mode="chat"
-            showModeIndicator={false}
-            hasActiveConversation={true}
-            wrapperClassName="w-full rounded-[32px] bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.08),0_1px_4px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35),0_1px_4px_rgb(0,0,0,0.15)] focus-within:ring-1 focus-within:ring-black/15 dark:focus-within:ring-white/15 focus-within:border-black/15 dark:focus-within:border-white/15 transition-all"
-          />
-          <p className="text-center text-[10px] text-muted-foreground mt-1 font-light">Legal AI can make mistakes. Please verify important information.</p>
         </div>
       </div>
-
-      {hasMessages && showScrollButton && (
-        <button
-          onClick={forceScrollToBottom}
-          className="absolute bottom-46 left-1/2 -translate-x-1/2 rounded-full bg-background text-muted-foreground hover:text-foreground transition-colors animate-in fade-in zoom-in duration-200 z-20"
-          aria-label="Scroll to bottom"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-circle-arrow-down"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M8 12l4 4" /><path d="M12 8v8" /><path d="M16 12l-4 4" /></svg>
-        </button>
-      )}
-    </div>
+    </MessageScrollerProvider>
   )
 }

@@ -1,11 +1,26 @@
 "use client";
 
 import { forwardRef, useImperativeHandle, useRef, useEffect, useState } from "react";
+import {
+  MessageScrollerProvider,
+  MessageScroller,
+  MessageScrollerViewport,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerButton,
+  useMessageScroller,
+} from "@/components/ui/message-scroller";
 import AITextLoading from "../misc/ai-text-loading";
 import AI_Input from "../misc/ai-chat";
 import { Response as MarkdownResponse } from "../misc/response";
 import { Actions, Action } from "../misc/actions";
 import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Paperclip, CheckCircle2, AlertTriangle, Download } from "lucide-react";
+import {
+  Attachment,
+  AttachmentContent,
+  AttachmentTitle,
+  AttachmentMedia,
+} from "@/components/ui/attachment";
 import { Button } from "@/components/ui/button";
 import { apiService } from "@/lib/api.service";
 import { toast } from "sonner";
@@ -88,13 +103,14 @@ export function ChatMessage({
           {Array.isArray(message.attachments) && message.attachments.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-2">
               {message.attachments.map((fileName, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-1 bg-primary/80 px-2 py-1 rounded text-xs"
-                >
-                  <Paperclip className="w-3 h-3" />
-                  <span>{fileName}</span>
-                </div>
+                <Attachment key={idx} size="xs" className="bg-primary/80 border-primary/20 text-white">
+                  <AttachmentMedia className="bg-white/10 text-white">
+                    <Paperclip className="h-3 w-3" />
+                  </AttachmentMedia>
+                  <AttachmentContent>
+                    <AttachmentTitle className="text-white">{fileName}</AttachmentTitle>
+                  </AttachmentContent>
+                </Attachment>
               ))}
             </div>
           )}
@@ -284,7 +300,7 @@ function WelcomeScreen({ user, onSendMessage, selectedMode, onDocumentGeneration
 }
 
 
-export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAreaProps>(
+const ChatMessagesAreaInner = forwardRef<ChatMessagesAreaRef, ChatMessagesAreaProps>(
   (
     {
       user,
@@ -300,40 +316,17 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
     },
     ref
   ) => {
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const { scrollToEnd, scrollToStart } = useMessageScroller();
     const [isCookieOpen, setIsCookieOpen] = useState(false);
-    const isAtBottomRef = useRef(true);
-    const [showScrollButton, setShowScrollButton] = useState(false);
 
-    const handleScroll = () => {
-      if (!scrollContainerRef.current) return;
-      const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
-      const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 50;
-      isAtBottomRef.current = isAtBottom;
-      setShowScrollButton(!isAtBottom);
-    };
-
-    const scrollToBottom = () => {
-      if (isAtBottomRef.current) {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    useImperativeHandle(ref, () => ({
+      scrollToBottom: () => {
+        scrollToEnd({ behavior: "smooth" });
+      },
+      scrollToTop: () => {
+        scrollToStart({ behavior: "smooth" });
       }
-    };
-
-    const forceScrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      isAtBottomRef.current = true;
-      setShowScrollButton(false);
-    };
-
-    const scrollToTop = () => {
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = 0;
-        isAtBottomRef.current = false;
-      }
-    };
-
-    useImperativeHandle(ref, () => ({ scrollToBottom: forceScrollToBottom, scrollToTop }));
+    }));
 
     const baseMessages = activeConversation?.messages || [];
 
@@ -364,62 +357,53 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
 
     useEffect(() => {
       if (isNewConversationSelected) {
-        scrollToTop();
-      } else {
-        if (isAtBottomRef.current) {
-          forceScrollToBottom();
-        }
+        scrollToStart({ behavior: "smooth" });
       }
-    }, [combinedMessages.length, isNewConversationSelected]);
-
-
-    useEffect(() => {
-      if (streamingMessageId && isAtBottomRef.current) {
-        scrollToBottom();
-      }
-    }, [streamingContent, streamingMessageId]);
-
-    useEffect(() => {
-      setShowScrollButton(false);
-      isAtBottomRef.current = true;
-    }, [activeConversation?.id]);
+    }, [isNewConversationSelected, scrollToStart]);
 
     const hasMessages = combinedMessages.length > 0;
 
     return (
       <div className="flex flex-col flex-1 min-h-0 relative">
-        <div
-          ref={scrollContainerRef}
-          onScroll={handleScroll}
-          className={`flex-1 min-h-0 metallic-scrollbar relative transition-all duration-200 ${
-            hasMessages ? "overflow-y-auto" : "overflow-hidden"
-          }`}
-        >
-          {hasMessages ? (
-            <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-8 pb-36 space-y-3 sm:space-y-4">
-              {combinedMessages.map((msg) => (
-                <ChatMessage
-                  key={msg.uiKey || msg.id}
-                  message={msg}
-                  isStreaming={streamingMessageId === msg.id}
-                  streamingContent={streamingContent}
-                  onRegenerate={onRegenerate}
-                  getPrevUserMessageContent={getPrevUserMessageContent}
+        <MessageScroller className="flex-1 min-h-0">
+          <MessageScrollerViewport className="metallic-scrollbar relative transition-all duration-200">
+            {hasMessages ? (
+              <MessageScrollerContent className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-8 pb-56 w-full flex flex-col gap-3 sm:gap-4">
+                {combinedMessages.map((msg) => (
+                  <MessageScrollerItem
+                    key={msg.uiKey || msg.id}
+                    messageId={msg.id}
+                    scrollAnchor={msg.role === "user"}
+                    className="w-full"
+                  >
+                    <ChatMessage
+                      message={msg}
+                      isStreaming={streamingMessageId === msg.id}
+                      streamingContent={streamingContent}
+                      onRegenerate={onRegenerate}
+                      getPrevUserMessageContent={getPrevUserMessageContent}
+                    />
+                  </MessageScrollerItem>
+                ))}
+
+                {isLoading && !streamingMessageId && (
+                  <MessageScrollerItem key="loading" messageId="loading" scrollAnchor={false} className="w-full">
+                    <LoadingMessage />
+                  </MessageScrollerItem>
+                )}
+              </MessageScrollerContent>
+            ) : (
+              <MessageScrollerContent>
+                <WelcomeScreen
+                  user={user}
+                  onSendMessage={onSendMessage}
+                  selectedMode={selectedMode}
                 />
-              ))}
-
-              {isLoading && !streamingMessageId && <LoadingMessage />}
-
-<div ref={messagesEndRef} className="h-24" />
-            </div>
-          ) : (
-            <WelcomeScreen
-              user={user}
-              onSendMessage={onSendMessage}
-              selectedMode={selectedMode}
-            />
-          )}
-        </div>
+              </MessageScrollerContent>
+            )}
+          </MessageScrollerViewport>
+          <MessageScrollerButton className="z-20 bottom-[180px] data-[direction=end]:bottom-[180px]" />
+        </MessageScroller>
 
         {/* Mobile: input pinned at bottom on welcome screen */}
         {!hasMessages && (
@@ -469,21 +453,21 @@ export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAre
               />
           </div>
         )}
-
-        {hasMessages && showScrollButton && (
-          <button
-            onClick={forceScrollToBottom}
-            className="absolute bottom-46  left-1/2 -translate-x-1/2 rounded-full bg-background text-muted-foreground hover:text-foreground transition-colors animate-in fade-in zoom-in duration-200"
-            aria-label="Scroll to bottom"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-circle-arrow-down"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M8 12l4 4" /><path d="M12 8v8" /><path d="M16 12l-4 4" /></svg>
-          </button>
-        )}
       </div>
     );
   }
 );
+ChatMessagesAreaInner.displayName = "ChatMessagesAreaInner";
 
+export const ChatMessagesArea = forwardRef <ChatMessagesAreaRef, ChatMessagesAreaProps>(
+  (props, ref) => {
+    return (
+      <MessageScrollerProvider autoScroll defaultScrollPosition="end">
+        <ChatMessagesAreaInner {...props} ref={ref} />
+      </MessageScrollerProvider>
+    );
+  }
+);
 ChatMessagesArea.displayName = "ChatMessagesArea";
 
 

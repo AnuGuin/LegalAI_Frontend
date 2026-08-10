@@ -8,6 +8,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LoaderOne } from "@/components/ui/loader";
 import { apiService, type Conversation as BackendConversation } from "@/lib/api.service";
 import { ChatMessage } from "@/components/citizen/chat/chat-message";
+import {
+  MessageScrollerProvider,
+  MessageScroller,
+  MessageScrollerViewport,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerButton,
+} from "@/components/ui/message-scroller";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -190,56 +198,64 @@ export default function SharedChatPage() {
       </header>
 
       {/* Scrollable conversation section */}
-      <div className="flex-1 overflow-y-auto relative z-10 w-full">
-        <div className="max-w-4xl mx-auto px-4 pt-8 pb-32">
-
-          {/* Shared Metadata Card */}
-          {sharedData && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white/40 dark:bg-zinc-900/40 border border-zinc-200/50 dark:border-zinc-800/50 backdrop-blur-md rounded-2xl p-5 md:p-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                  {sharedData.userName.slice(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">Shared by</p>
-                  <h3 className="text-sm font-semibold text-foreground">{sharedData.userName}</h3>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground border-t border-zinc-200/50 dark:border-zinc-800/50 md:border-t-0 pt-3 md:pt-0">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-primary shrink-0" />
-                  <span>{sharedData.conversation.createdAt ? new Date(sharedData.conversation.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'Unknown Date'}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Eye className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>{sharedData.shareInfo?.viewCount ?? 1} views {sharedData.shareInfo?.maxViews ? `/ ${sharedData.shareInfo.maxViews}` : ''}</span>
-                </div>
-                {sharedData.shareInfo?.expiresAt && (
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Expires: {new Date(sharedData.shareInfo.expiresAt).toLocaleDateString()}</span>
+      <MessageScrollerProvider defaultScrollPosition="start">
+        <MessageScroller className="flex-1 min-h-0 relative z-10 w-full">
+          <MessageScrollerViewport className="metallic-scrollbar relative transition-all duration-200">
+            <MessageScrollerContent className="max-w-4xl mx-auto px-4 pt-8 pb-56 w-full flex flex-col gap-6">
+              {/* Shared Metadata Card */}
+              {sharedData && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white/40 dark:bg-zinc-900/40 border border-zinc-200/50 dark:border-zinc-800/50 backdrop-blur-md rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 w-full"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                      {sharedData.userName.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">Shared by</p>
+                      <h3 className="text-sm font-semibold text-foreground">{sharedData.userName}</h3>
+                    </div>
                   </div>
-                )}
-              </div>
-            </motion.div>
-          )}
 
-          {/* Conversation history area */}
-          <div className="space-y-6">
-            {transformedMessages.map((msg) => (
-              <ChatMessage
-                key={msg.id}
-                message={msg}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground border-t border-zinc-200/50 dark:border-zinc-800/50 md:border-t-0 pt-3 md:pt-0">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-primary shrink-0" />
+                      <span>{sharedData.conversation.createdAt ? new Date(sharedData.conversation.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'Unknown Date'}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Eye className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span>{sharedData.shareInfo?.viewCount ?? 1} views {sharedData.shareInfo?.maxViews ? `/ ${sharedData.shareInfo.maxViews}` : ''}</span>
+                    </div>
+                    {sharedData.shareInfo?.expiresAt && (
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span>Expires: {new Date(sharedData.shareInfo.expiresAt).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Conversation history area */}
+              {transformedMessages.map((msg) => (
+                <MessageScrollerItem
+                  key={msg.id}
+                  messageId={msg.id}
+                  scrollAnchor={msg.role === "user"}
+                  className="w-full"
+                >
+                  <ChatMessage
+                    message={msg}
+                  />
+                </MessageScrollerItem>
+              ))}
+            </MessageScrollerContent>
+          </MessageScrollerViewport>
+          <MessageScrollerButton className="bottom-[240px] data-[direction=end]:bottom-[240px]" />
+        </MessageScroller>
+      </MessageScrollerProvider>
 
       {/* Bottom overlay: CTA to Start Your Own Session */}
       <div className="sticky bottom-0 left-0 w-full pt-16 pb-8 px-4 z-20 pointer-events-none bg-gradient-to-t from-background via-background/95 to-transparent">
