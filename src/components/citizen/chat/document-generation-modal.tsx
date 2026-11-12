@@ -344,7 +344,9 @@ export function DocumentGenerationModal({
         toast("Document generated (incomplete)", { description: result.warning ??
             "Some optional fields were filled with placeholders. Review before use." });
       } else {
-        toast("Document ready", { description: "Your document has been generated successfully." });
+        toast("Document ready", {
+          description: result.warning ?? "Your document has been generated successfully.",
+        });
       }
     } catch (error: any) {
       setStep("fill");
@@ -589,7 +591,7 @@ export function DocumentGenerationModal({
                       ? "Document ready"
                       : "Document generated (incomplete)"}
                   </p>
-                  {generationResult.generationStatus === "incomplete" && (
+                  {(generationResult.generationStatus === "incomplete" || generationResult.warning) && (
                     <p className="text-xs text-muted-foreground">
                       {generationResult.warning ??
                         "Some optional fields used placeholders. Review before submission."}
