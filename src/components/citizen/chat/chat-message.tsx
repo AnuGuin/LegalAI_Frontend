@@ -163,7 +163,8 @@ export function ChatMessage({
                     ? "Document ready"
                     : "Document generated (incomplete)"}
                 </p>
-                {message.metadata.documentResult.generationStatus === "incomplete" && (
+                {(message.metadata.documentResult.generationStatus === "incomplete" ||
+                  message.metadata.documentResult.warning) && (
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {message.metadata.documentResult.warning ??
                       "Some optional fields used placeholders. Review before submission."}
